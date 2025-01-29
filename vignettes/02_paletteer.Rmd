@@ -72,7 +72,7 @@ An overview of the number of available palettes:
 (m <- c4a_overview(return.matrix = TRUE))
 ```
 
-There are in total `r sum(m)` palettes, and by palette type:
+There are in total `sum(m)` palettes, and by palette type:
 
 ```{r eval=FALSE}
 colSums(m)
