@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="../deps/MathJax-3.2.2/tex-chtml.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Exploring the 2759 palettes from paletteer">
 </head>
 <body>
@@ -79,98 +79,17 @@
 </h2>
 <p>The prepared system data can be loaded as follows:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">paletteer</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/gzcon.html" class="external-link">gzcon</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/connections.html" class="external-link">url</a></span><span class="op">(</span><span class="st">"https://mtennekes.github.io/cols4all/paletteer.rds"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">paletteer</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/gzcon.html" class="external-link">gzcon</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/connections.html" class="external-link">url</a></span><span class="op">(</span><span class="st">"https://cols4all.github.io/paletteer.rds"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># from paletteer version 1.6.0</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/c4a_sysdata_import.html">c4a_sysdata_import</a></span><span class="op">(</span><span class="va">paletteer</span><span class="op">)</span></span>
-<span><span class="co">#&gt; cols4all system data imported successfully</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/c4a_sysdata_import.html">c4a_sysdata_import</a></span><span class="op">(</span><span class="va">paletteer</span><span class="op">)</span></span></code></pre></div>
 <p>Note that this system data import will replace the default cols4all palettes. This is convenient because almost all cols4all palettes are also contained in <strong>paletteer</strong>. The only exceptions are the cols4all palette series <code>"powerbi"</code> and <code>"cols4all"</code>.</p>
 <p>An overview of the number of available palettes:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="op">(</span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/c4a_palettes.html">c4a_overview</a></span><span class="op">(</span>return.matrix <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                      cat seq div cyc bivs bivc bivd bivg</span></span>
-<span><span class="co">#&gt; awtools                4   2   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; basetheme              8   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; beyonce              100  21   9   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; ButterflyColors       30   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; calecopal             40   4   1   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; cartography            2  14   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; colorBlindness         3   2  14   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; colorblindr            2   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; colRoz                50   3   1   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; dichromat              2   2  13   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; DresdenColor          18   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; dutchmasters           6   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; feathers              11   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; fishualize           163  12   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; futurevisions         14   5   1   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; ggpomological          2   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; ggprism               61   4   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; ggsci                 29  19   1   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; ggthemes             100  24  28   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; ggthemes_ptol          1   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; ggthemes_solarized     8   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; ggthemr               18   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; ghibli                27   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; grDevices              5  80  36   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; harrypotter            0  16   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; impressionist.colors  24   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; IslamicArt            16   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; jcolors               10   3   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; khroma                16  21  20   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; LaCroixColoR          13   0   8   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; lisa                 121   4   3   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; ltc                   24   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; Manu                  21   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; MapPalettes            0   2   4   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; MetBrewer             56   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; MexBrewer              4   7   7   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; miscpalettes          16   1   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; MoMAColors            25   6   4   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; musculusColors         7   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; nationalparkcolors    25   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; NatParksPalettes      30   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; nbapalettes          128   1   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; NineteenEightyR        7   3   2   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; nord                  11   3   2   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; ochRe                 15   0   1   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; oompaBase              0   5   3   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; palettesForR          42   4   2   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; palettetown          389   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; palr                   0   4   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; pals                   8  59  18   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; peRReo                21   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; PNWColors              4   7   3   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; Polychrome             8   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; PrettyCols            16   8   8   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; rcartocolor            6  21   7   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; RColorBrewer           8  19   8   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; Redmonder             24  10   7   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; rockthemes            21   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; RSkittleBrewer         5   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; rtist                 15   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; scico                  0  21  14   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; severance              7   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; soilpalettes           7   7   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; suffrager              6   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; tayloRswift           14   1   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; tidyquant              3   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; trekcolors            23   8   4   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; tvthemes              58   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; unikn                  5   8   3   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; vangogh               15   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; vapeplot               8   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; vapoRwave             11   2   1   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; viridis                0   8   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; waRhol                15   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; werpals               17   1   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; wesanderson           24   0   0   0    0    0    0    0</span></span>
-<span><span class="co">#&gt; yarrr                 21   0   0   0    0    0    0    0</span></span></code></pre></div>
-<p>There are in total 2759 palettes, and by palette type:</p>
+<code class="sourceCode R"><span><span class="op">(</span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/c4a_palettes.html">c4a_overview</a></span><span class="op">(</span>return.matrix <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>There are in total <code>sum(m)</code> palettes, and by palette type:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colSums</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  cat  seq  div  cyc bivs bivc bivd bivg </span></span>
-<span><span class="co">#&gt; 2074  452  233    0    0    0    0    0</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colSums</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="exploring-the-palettes">Exploring the palettes<a class="anchor" aria-label="anchor" href="#exploring-the-palettes"></a>
