@@ -57,7 +57,7 @@ The most extensive collection of color palettes in R is the package **paletteer*
 
 The prepared system data can be loaded as follows:
 
-```{r}
+```{r eval=FALSE}
 paletteer = readRDS(gzcon(url("https://cols4all.github.io/paletteer.rds")))
 # from paletteer version 1.6.0
 
@@ -68,13 +68,13 @@ Note that this system data import will replace the default cols4all palettes. Th
 
 An overview of the number of available palettes:
 
-```{r}
+```{r eval=FALSE}
 (m <- c4a_overview(return.matrix = TRUE))
 ```
 
 There are in total `r sum(m)` palettes, and by palette type:
 
-```{r}
+```{r eval=FALSE}
 colSums(m)
 ```
 
