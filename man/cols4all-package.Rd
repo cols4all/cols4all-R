@@ -45,8 +45,8 @@ This page provides a brief overview of all package functions.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://mtennekes.github.io/cols4all/}
-  \item \url{https://github.com/mtennekes/cols4all}
+  \item \url{https://cols4all.github.io/cols4all-R/}
+  \item \url{https://github.com/cols4all/cols4all-R}
   \item Report bugs at \url{https://github.com/mtennekes/cols4all/issues}
 }
 

@@ -40,7 +40,7 @@ Suggests:
     bookdown,
     bibtex,
     plotly
-URL: https://mtennekes.github.io/cols4all/, https://github.com/mtennekes/cols4all
+URL: https://cols4all.github.io/cols4all-R/, https://github.com/cols4all/cols4all-R
 BugReports: https://github.com/mtennekes/cols4all/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

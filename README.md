@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# Colors for all! <a href="https://mtennekes.github.io/cols4all/"><img src="man/figures/logo.png" align="right" height="138" alt="cols4all website" /></a>
+# Colors for all! <a href="https://cols4all.github.io/cols4all-R/"><img src="man/figures/logo.png" align="right" height="138" alt="cols4all website" /></a>
 
 <!-- badges: start --->
 
@@ -40,7 +40,7 @@ The development version can be installed as follows:
 
 ``` r
 install.packages("remotes")
-remotes::install_github("mtennekes/cols4all", dependencies = TRUE)
+remotes::install_github("cols4all/cols4all-R", dependencies = TRUE)
 ```
 
 ## Getting started
