@@ -32,6 +32,10 @@ c4a_plot = function(palette, ..., dark = FALSE, include.na = FALSE, hex = FALSE,
 			if (include.na) pal = c(pal, c4a_na(palette))
 		}
 	} else {
+		if (is.matrix(palette)) {
+			ncols = ncol(palette)
+			palette = t(palette)
+		}
 		pal = validate_colors(palette, name = "palette")
 	}
 

@@ -14,8 +14,8 @@ Authors@R: c(
     person("Olivier", "Roy", role = "ctb")
 	)
 Description: Color palettes for all people, including those with color vision deficiency. Popular color palette series have been organized by type and have been scored on several properties such as color-blind-friendliness and fairness (i.e. do colors stand out equally?). Own palettes can also be loaded and analysed. Besides the common palette types (categorical, sequential, and diverging) it also includes cyclic and bivariate color palettes. Furthermore, a color for missing values is assigned to each palette.
-Version: 0.8
-Date: 2024-10-16
+Version: 0.8-1
+Date: 2025-07-18
 Encoding: UTF-8
 Depends:
     R (>= 3.5.0),
@@ -41,6 +41,6 @@ Suggests:
     bibtex,
     plotly
 URL: https://cols4all.github.io/cols4all-R/, https://github.com/cols4all/cols4all-R
-BugReports: https://github.com/mtennekes/cols4all/issues
+BugReports: https://github.com/cols4all/cols4all-R/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
