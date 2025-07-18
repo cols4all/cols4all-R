@@ -1,5 +1,5 @@
 # cols4all 0.8-1 (devel)
-- added "|" and "+" prefixes to reverse bivariate palettes
+- added "|", "+", and "/" prefixes to reverse bivariate palettes
 
 # cols4all 0.8
 - main table much faster
