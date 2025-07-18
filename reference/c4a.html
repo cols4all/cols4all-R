@@ -55,6 +55,7 @@
 <span>  m <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cat"</span>, <span class="st">"seq"</span>, <span class="st">"div"</span>, <span class="st">"cyc"</span>, <span class="st">"bivs"</span>, <span class="st">"bivc"</span>, <span class="st">"bivd"</span>, <span class="st">"bivg"</span><span class="op">)</span>,</span>
 <span>  reverse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  diag_flip <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  order <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  range <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  colorsort <span class="op">=</span> <span class="st">"orig"</span>,</span>
@@ -78,7 +79,7 @@
 
 
 <dl><dt id="arg-palette">palette<a class="anchor" aria-label="anchor" href="#arg-palette"></a></dt>
-<dd><p>name of the palette. See <code><a href="c4a_palettes.html">c4a_palettes</a></code> for available palettes. If omitted, the default palette is provided by <code>c4a_default_palette</code>. The palette name can be prefixed with a <code>"-"</code> symbol, which will reverse the palette (this can also be done with the <code>reverse</code> argument). For bivariate palettes, a <code>"-"</code> means reversed horizontally (columns), a <code>"|"</code>means reversed vertically (row), and a <code>"+"</code> means reversed in both directions.</p></dd>
+<dd><p>name of the palette. See <code><a href="c4a_palettes.html">c4a_palettes</a></code> for available palettes. If omitted, the default palette is provided by <code>c4a_default_palette</code>. The palette name can be prefixed with a <code>"-"</code> symbol, which will reverse the palette (this can also be done with the <code>reverse</code> argument). For bivariate palettes, a <code>"-"</code> means reversed horizontally (columns), a <code>"|"</code>means reversed vertically (row), and a <code>"+"</code> means reversed in both directions. In addition, a <code>"/"</code> or <code>"\\"</code> will flip the palette diagonally. This can be used in combination with <code>"-"</code>, <code>"|"</code>, or <code>"+"</code>. E.g. <code>"-/"</code> will reverse the columns and flip the palette diagonally. Note that <code>"\\"</code> needs to be escaped, so the input would be <code>"\\\\"</code> (alternatively <code>"+/"</code> can be used.</p></dd>
 
 
 <dt id="arg-n">n<a class="anchor" aria-label="anchor" href="#arg-n"></a></dt>
@@ -95,6 +96,10 @@
 
 <dt id="arg-reverse">reverse<a class="anchor" aria-label="anchor" href="#arg-reverse"></a></dt>
 <dd><p>should the palette be reversed? In case of a bivariate palette, a vector of two: the first indicates the horizontal direction (columns) and the second the vertical (rows).</p></dd>
+
+
+<dt id="arg-diag-flip">diag_flip<a class="anchor" aria-label="anchor" href="#arg-diag-flip"></a></dt>
+<dd><p>should a bivariate palette be flipped diagonally?</p></dd>
 
 
 <dt id="arg-order">order<a class="anchor" aria-label="anchor" href="#arg-order"></a></dt>
