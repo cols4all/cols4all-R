@@ -47,7 +47,7 @@ Useful links:
 \itemize{
   \item \url{https://cols4all.github.io/cols4all-R/}
   \item \url{https://github.com/cols4all/cols4all-R}
-  \item Report bugs at \url{https://github.com/mtennekes/cols4all/issues}
+  \item Report bugs at \url{https://github.com/cols4all/cols4all-R/issues}
 }
 
 }
