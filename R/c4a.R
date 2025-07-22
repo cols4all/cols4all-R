@@ -2,7 +2,7 @@
 #'
 #' Get a cols4all color palette: `c4a` returns the colors of the specified palette, `c4a_na` returns the color for missing value that is associated with the specified palette, and `c4a_ramp` returns a color ramp function.  Run \code{\link{c4a_gui}} to see all available palettes, which are also listed with \code{\link{c4a_palettes}}.
 #'
-#' @param palette name of the palette. See \code{\link{c4a_palettes}} for available palettes. If omitted, the default palette is provided by `c4a_default_palette`. The palette name can be prefixed with a `"-"` symbol, which will reverse the palette (this can also be done with the `reverse` argument). For bivariate palettes, a `"-"` means reversed horizontally (columns), a `"|"`means reversed vertically (row), and a `"+"` means reversed in both directions. In addition, a `"/"` or `"\\"` will flip the palette diagonally. This can be used in combination with `"-"`, `"|"`, or `"+"`. E.g. `"-/"` will reverse the columns and flip the palette diagonally. Note that `"\\"` needs to be escaped, so the input would be `"\\\\"` (alternatively `"+/"` can be used.
+#' @param palette name of the palette. See \code{\link{c4a_palettes}} for available palettes. If omitted, the default palette is provided by `c4a_default_palette`. The palette name can be prefixed with a `"-"` symbol, which will reverse the palette (this can also be done with the `reverse` argument). For bivariate palettes, a `"-"` means reversed horizontally (columns), a `"|"`means reversed vertically (row), and a `"+"` means reversed in both directions. In addition, a `"//"` or `"\\"` will flip the palette diagonally. This can be used in combination with `"-"`, `"|"`, or `"+"`. E.g. `"-//"` will reverse the columns and flip the palette diagonally.
 #' @param n number of colors. If omitted then: for type `"cat"` the maximum number of colors is returned, for types `"seq"`, `"div"`, and `"cyc"`, 7 , 9, and 9 colors respectively.
 #' @param m number of rows in case type is bivariate, so one of `"bivs"`, `"bivc"`, `"bivd"` or  `"bivg"` (see \code{\link{c4a_types}} for descriptions)
 #' @param type type of color palette, in case `palette` is not specified: one of `"cat"`, `"seq"`, `"div"`, `"cyc"`, `"bivs"`, `"bivc"`, `"bivd"`, `"bivg"`. Run \code{\link{c4a_types}} for descriptions.
@@ -170,25 +170,12 @@ c4a_info = function(palette, no.match = c("message", "error", "null"), verbose =
 	if (length(palette) != 1L) stop("palette should be a character value (so length 1)", call. = FALSE)
 
 	no.match = match.arg(no.match)
-	ct1 = substr(palette, 1, 1)
-	ct2 = substr(palette, 2, 2)
 
-	isrev = (ct1 %in% c("-", "+")) || (ct2 %in% c("-", "+"))
-	isrev2 = (ct1 %in% c("|", "+")) || (ct2 %in% c("|", "+"))
+	res = parse_prefixed_text(palette)
 
-	isdiag = (ct1 == "/") || (ct2 == "/")
-	isdiag2 = (ct1 == "\\") || (ct2 == "\\")
-
-	diag_flip = isdiag || isdiag2
-
-	if (isrev || isrev2 || diag_flip) {
-		start = if (ct2 %in% c("-", "+", "|", "/", "\\")) 3 else 2
-		palette = substr(palette, start, nchar(palette))
-		rev = c(isrev, isrev2)
-		if (isdiag) rev = !rev
-	} else {
-		rev = c(isrev, FALSE)
-	}
+	palette = res$name
+	is_rev = res$is_rev
+	is_diag = res$is_diag
 
 	z = .C4A$z
 
@@ -199,8 +186,8 @@ c4a_info = function(palette, no.match = c("message", "error", "null"), verbose =
 	palid = which(fullname == z$fullname)
 
 	x = as.list(z[palid, ])
-	x$reverse = rev
-	x$diag_flip = diag_flip
+	x$reverse = is_rev
+	x$diag_flip = is_diag
 	x$palette = x$palette[[1]]
 
 	structure(x, class = c("c4a_info", "list"))
@@ -236,6 +223,30 @@ get_zp = function(p, n = NA, no.match, verbose) {
 		n = x$ndef
 	}
 	z = data.frame(name = x$name, series = x$series, fullname = x$fullname, type = x$type, n = n)
+}
+
+parse_prefixed_text <- function(x) {
+	# Pattern matches:
+	# - optional symbol: +, -, or |
+	# - optional slash prefix: // or \ (single backslash)
+	pattern <- "^([-+|]?)(//|\\\\)?(.*)$"
+
+	matches <- regexec(pattern, x)
+	result <- regmatches(x, matches)[[1]]
+
+	part_rev  <- ifelse(length(result) >= 2, result[2], "")
+	part_diag  <- ifelse(length(result) >= 3, result[3], "")
+	name   <- ifelse(length(result) >= 4, result[4], x)
+
+	is_rev = c(part_rev %in% c("-", "+"), part_rev %in% c("|", "+"))
+	is_diag = part_diag %in% c("//", "\\")
+
+	if (is_diag) is_rev = rev(is_rev)
+	if (part_diag == "//") is_rev = !is_rev
+
+	list(name = name,
+		 is_rev = is_rev,
+		 is_diag = is_diag)
 }
 
 
