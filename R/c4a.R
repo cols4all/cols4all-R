@@ -242,7 +242,7 @@ parse_prefixed_text <- function(x) {
 	is_diag = part_diag %in% c("//", "\\")
 
 	if (is_diag) is_rev = rev(is_rev)
-	if (part_diag == "//") is_rev = !is_rev
+	if (part_diag == "\\") is_rev = !is_rev
 
 	list(name = name,
 		 is_rev = is_rev,
