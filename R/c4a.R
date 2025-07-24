@@ -3,7 +3,7 @@
 #' Get a cols4all color palette: `c4a` returns the colors of the specified palette, `c4a_na` returns the color for missing value that is associated with the specified palette, and `c4a_ramp` returns a color ramp function.  Run \code{\link{c4a_gui}} to see all available palettes, which are also listed with \code{\link{c4a_palettes}}.
 #'
 #' @param palette name of the palette. See \code{\link{c4a_palettes}} for available palettes. If omitted, the default palette is provided by `c4a_default_palette`. The palette name can be prefixed with a `"-"` symbol, which will reverse the palette (this can also be done with the `reverse` argument). For bivariate palettes, a `"-"` means reversed horizontally (columns), a `"|"`means reversed vertically (row), and a `"+"` means reversed in both directions. In addition, a `"//"` or `"\\"` will flip the palette diagonally. This can be used in combination with `"-"`, `"|"`, or `"+"`. E.g. `"-//"` will reverse the columns and flip the palette diagonally.
-#' @param n number of colors. If omitted then: for type `"cat"` the maximum number of colors is returned, for types `"seq"`, `"div"`, and `"cyc"`, 7 , 9, and 9 colors respectively.
+#' @param n number of colors. If omitted then: for type `"cat"` the maximum number of colors is returned, for types `"seq"`, `"div"`, and `"cyc"`, 7 , 9, and 9 colors respectively. For bivariate palettes `n` is the number of columns.
 #' @param m number of rows in case type is bivariate, so one of `"bivs"`, `"bivc"`, `"bivd"` or  `"bivg"` (see \code{\link{c4a_types}} for descriptions)
 #' @param type type of color palette, in case `palette` is not specified: one of `"cat"`, `"seq"`, `"div"`, `"cyc"`, `"bivs"`, `"bivc"`, `"bivd"`, `"bivg"`. Run \code{\link{c4a_types}} for descriptions.
 #' @param reverse should the palette be reversed? In case of a bivariate palette, a vector of two: the first indicates the horizontal direction (columns) and the second the vertical (rows).
@@ -106,28 +106,15 @@ c4a = function(palette = NULL, n = NA, m = NA, type = c("cat", "seq", "div", "cy
 
 	if (!is.null(mes) && verbose) message(mes)
 
-	if (substr(type, 1, 3) == "biv") {
-		if (reverse[1]) {
-			pal2 = pal[, ncol(pal):1L]
-		} else {
-			pal2 = pal
-		}
 
-		if (reverse[2]) {
-			pal2 = pal2[nrow(pal2):1L, ]
-		}
-		if (x$diag_flip) pal2 = t(pal2)
-	} else {
-		pal2 = if (reverse[1]) rev(pal) else pal
-	}
 
 
 
 
 	if (format == "hex") {
-		pal2
+		pal
 	} else {
-		cols = colorspace::hex2RGB(pal2)
+		cols = colorspace::hex2RGB(pal)
 
 		if (format == "rgb") {
 			cols@coords * 255

@@ -18,9 +18,17 @@ div_rev = function(x) {
 	hL > hR
 }
 
-get_pal_n = function(n, m = NA, name, type, series, palette, nmin, nmax, ndef, mmin, mmax, mdef, range = NA, colorsort = "orig", nm_invalid = "error",...) {
+get_pal_n = function(n, m = NA, colorsort = "orig", range = NA, reverse = c(FALSE, FALSE), diag_flip = FALSE, type, palette, nmin, nmax, ndef, mmin, mmax, mdef, nm_invalid = "error", ...) {
+
 
 	if (is.na(m)) m = n
+
+	if (substr(type, 1, 3) == "biv" && diag_flip) {
+		m_tmp = m
+		m = n
+		n = m_tmp
+	}
+
 	n_orig = n
 	m_orig = m
 	if (n > nmax || n < nmin) {
@@ -150,7 +158,7 @@ get_pal_n = function(n, m = NA, name, type, series, palette, nmin, nmax, ndef, m
 		}
 	}
 
-	if (colorsort != "orig") {
+	x2 = if (colorsort != "orig") {
 		if (type == "cat") {
 			sby = substr(colorsort, 1, 1)
 			if (sby == "H") {
@@ -196,6 +204,21 @@ get_pal_n = function(n, m = NA, name, type, series, palette, nmin, nmax, ndef, m
 		x
 	}
 
+	if (substr(type, 1, 3) == "biv") {
+		if (reverse[1]) {
+			x3 = x2[, ncol(x2):1L]
+		} else {
+			x3 = x2
+		}
+
+		if (reverse[2]) {
+			x3 = x3[nrow(x3):1L, ]
+		}
+		if (diag_flip) x3 = t(x3)
+	} else {
+		x3 = if (reverse[1]) rev(x2) else x2
+	}
+	x3
 }
 
 
