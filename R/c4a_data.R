@@ -54,6 +54,7 @@ c4a_data = function(x, xNA = NA, types = "cat", series = "x", nmin = NA, nmax = 
 		x$cit = NULL
 		x$bib = NULL
 		x$reverse = NULL
+		x$diag_flip = NULL
 		x$palette = I(list(x$palette))
 		z = as.data.frame(x)
 		rownames(z) = NULL

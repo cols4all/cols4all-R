@@ -2,6 +2,7 @@
 #
 # Get the default range for gradient palettes, so sequential `"seq"` and diverging `"div"`. The range is a vector of two numbers between 0 and 1 that determine the range that is used for sequential and diverging palettes. The first number determines where the palette begins, and the second number where it ends. For sequential `"seq"` palettes, 0 means the leftmost (normally lightest) color, and 1 the rightmost (often darkest) color. For diverging `"seq"` palettes, 0 means the middle color, and 1 both extremes. If only one number is provided, this number is interpreted as the endpoint (with 0 taken as the start). This function sets the default based on the number of colors `n`: for small values of `n` the default range is smaller than `c(0, 1)` for aesthetically more pleasing palettes. See `c4a_gui` how the range effects the palettes. See also examples below. The range can be set manually with the argument `range` of \code{\link{c4a}}.
 range_seq = function(n = 9, nmin = 3, nmax = 9, slope_min = 1/30, slope_max = 1/30) {
+	nmin = min(nmin, n)
 	nmax = min(nmax, n)
 
 	ns = nmin:nmax

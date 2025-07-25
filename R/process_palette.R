@@ -168,7 +168,6 @@ process_palette = function(pal, type, colNA = NA, take.gray.for.NA = FALSE, remo
 		if (!is.null(range_matrix_args) && length(range_matrix_args)) {
 			rma[names(range_matrix_args)] = range_matrix_args
 		}
-
 		range_matrix = do.call(paste0("range_", type), c(list(n = length(pal)), rma))
 		attr(pal, "range_matrix") = range_matrix
 	} else if (is.null(range_matrix)) {

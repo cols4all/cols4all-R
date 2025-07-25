@@ -353,6 +353,7 @@ do_cellspec = function(lst) {
 		matrix_interval_labels = list(CR = c("1.0 - 1.2", "1.2 - 1.5", "1.5 - 2.0", "", "3.0 - 4.5", "4.5 - 7.0", "7.0 +"), dist = c("< 2", "2 - 5", "5 - 10", "10 - 15"))
 		matrix_breaks_digits = c(CR = 1, dist = 0)
 
+		show_ggplot2_div_message = TRUE
 	})
 	fill_P()
 }

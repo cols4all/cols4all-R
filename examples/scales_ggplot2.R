@@ -31,7 +31,7 @@ if (require("ggplot2")) {
 	# continuous diverging scale
 	ggplot(diam_exp, aes(x = carat, y = depth, color = price)) +
 		geom_point(size = 2) +
-		scale_color_continuous_c4a_div("wes.zissou1", mid = mean(diam_exp$price)) +
+		scale_color_continuous_c4a_div("wes.zissou1", mid = NA) +
 		theme_light()
 
 	# binned sequential scale

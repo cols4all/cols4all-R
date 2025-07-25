@@ -43,9 +43,9 @@ check_div_pal = function(p) {
 		})
 
 		dm = get_dist_matrix(p, cvd = cvd)
-		step_sizes = diag(dm[1:(n-1), 2:n])
+		step_sizes = diag(dm[1:(n-1), 2:n, drop = FALSE])
 
-		step2_sizes = diag(dm[1:(n-2), 3:n])
+		step2_sizes = diag(dm[1:(n-2), 3:n, drop = FALSE])
 
 		# should be positive
 		step12a = step2_sizes - step_sizes[1:(n-2)]
@@ -160,7 +160,9 @@ check_seq_pal = function(p) {
 
 	scores = t(sapply(cvds, function(cvd) {
 		m = get_dist_matrix(p, cvd = cvd)
-		step_sizes =  diag(m[1:(n-1), 2:n])# mapply(function(i,j) m[i,j], 1:(n-1), 2:n)
+
+		step_sizes =  diag(m[1:(n-1), 2:n, drop = FALSE])# mapply(function(i,j) m[i,j], 1:(n-1), 2:n)
+
 		min_step_size = min(step_sizes)
 		max_step_size = max(step_sizes)
 		#mean_step_size = mean(step_sizes)
@@ -168,7 +170,7 @@ check_seq_pal = function(p) {
 		min_dist = min(m, na.rm = TRUE)
 
 		if (n > 2) {
-			step2_sizes = diag(m[1:(n-2), 3:n])
+			step2_sizes = diag(m[1:(n-2), 3:n, drop = FALSE])
 
 			# should be positive
 			step12a = step2_sizes - step_sizes[1:(n-2)]

@@ -16,3 +16,6 @@
 "matplotlib","Palettes from the Python library matplotlib"
 "wes","Palettes from Wes Anderson movies"
 "powerbi","Palettes from Microsoft Power BI"
+"ocean","Colormaps for Oceanography by Thyng et al."
+"gmt","Palettes from General Mapping Tools"
+"meteo","Palettes by Oliver Fuhrer from MeteoSwiss"

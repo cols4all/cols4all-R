@@ -1,5 +1,7 @@
-# cols4all 0.8-1 (devel)
-- added "|", "+", and "/" prefixes to reverse bivariate palettes
+# cols4all 0.9
+- palettes added: "stevens" sequential
+- palette series added: "gmt", "meteo", and "ocean"
+- added "|", "+", "//", and "\\" prefixes to reverse bivariate palettes
 
 # cols4all 0.8
 - main table much faster

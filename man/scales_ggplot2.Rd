@@ -185,7 +185,7 @@ scale_fill_binned_c4a_div(
 
 \item{...}{parameters passed on to the underlying scale functions: \code{\link[ggplot2:discrete_scale]{discrete_scale}}, \code{\link[ggplot2:continuous_scale]{continuous_scale}}, and \code{\link[ggplot2:binned_scale]{binned_scale}}.}
 
-\item{mid}{data value that should be mapped to the mid-point of the diverging color scale}
+\item{mid}{data value that should be mapped to the mid-point of the diverging color scale. By default 0, which is useful for many use cases. However, if the data has only positive (or only negative) values, it may be worthwhile to specify this. Use \code{NA} to set it to the middle of the value range.}
 
 \item{n_interp}{number of discrete colors that should be used to interpolate the continuous color scale. Recommended to use an odd number to include the midpoint}
 }
@@ -229,7 +229,7 @@ if (require("ggplot2")) {
 	# continuous diverging scale
 	ggplot(diam_exp, aes(x = carat, y = depth, color = price)) +
 		geom_point(size = 2) +
-		scale_color_continuous_c4a_div("wes.zissou1", mid = mean(diam_exp$price)) +
+		scale_color_continuous_c4a_div("wes.zissou1", mid = NA) +
 		theme_light()
 
 	# binned sequential scale
