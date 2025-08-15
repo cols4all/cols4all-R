@@ -57,7 +57,7 @@ c4a = function(palette = NULL, n = NA, m = NA, type = c("cat", "seq", "div", "cy
 
 	reverse = rep(reverse, length.out = 2)
 
-	reverse = xor(reverse, x$reverse)
+	x$reverse = xor(reverse, x$reverse)
 
 	if (is.na(n)) n = x$ndef
 	if (is.na(m)) m = if (is.na(x$mdef)) n else x$mdef
@@ -105,10 +105,6 @@ c4a = function(palette = NULL, n = NA, m = NA, type = c("cat", "seq", "div", "cy
 	} else pal
 
 	if (!is.null(mes) && verbose) message(mes)
-
-
-
-
 
 
 	if (format == "hex") {
