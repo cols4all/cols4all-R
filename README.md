@@ -68,20 +68,23 @@ c4a_series()
 #> 1      brewer                                ColorBrewer palettes
 #> 2       carto                          Palettes designed by CARTO
 #> 3    cols4all                  cols4all palettes (in development)
-#> 4         hcl  Palettes from the Hue Chroma Luminance color space
-#> 5      kovesi                   Palettes designed by Peter Kovesi
-#> 6  matplotlib         Palettes from the Python library matplotlib
-#> 7         met Palettes inspired by The Metropolitan Museum of Art
-#> 8        misc                              Miscellaneous palettes
-#> 9       parks                 Palettes inspired by National Parks
-#> 10       poly               Qualitative palettes with many colors
-#> 11    powerbi                    Palettes from Microsoft Power BI
-#> 12      scico             Scientific colour maps by Fabio Crameri
-#> 13    seaborn            Palettes from the Python library Seaborn
-#> 14    stevens                Bivariate palettes by Joshua Stevens
-#> 15    tableau                        Palettes designed by Tableau
-#> 16        tol                       Palettes designed by Paul Tol
-#> 17        wes                   Palettes from Wes Anderson movies
+#> 4         gmt                 Palettes from General Mapping Tools
+#> 5         hcl  Palettes from the Hue Chroma Luminance color space
+#> 6      kovesi                   Palettes designed by Peter Kovesi
+#> 7  matplotlib         Palettes from the Python library matplotlib
+#> 8         met Palettes inspired by The Metropolitan Museum of Art
+#> 9       meteo           Palettes by Oliver Fuhrer from MeteoSwiss
+#> 10       misc                              Miscellaneous palettes
+#> 11      ocean          Colormaps for Oceanography by Thyng et al.
+#> 12      parks                 Palettes inspired by National Parks
+#> 13       poly               Qualitative palettes with many colors
+#> 14    powerbi                    Palettes from Microsoft Power BI
+#> 15      scico             Scientific colour maps by Fabio Crameri
+#> 16    seaborn            Palettes from the Python library Seaborn
+#> 17    stevens                Bivariate palettes by Joshua Stevens
+#> 18    tableau                        Palettes designed by Tableau
+#> 19        tol                       Palettes designed by Paul Tol
+#> 20        wes                   Palettes from Wes Anderson movies
 ```
 
 ## Using the tool
