@@ -1,3 +1,6 @@
+# cols4all 0.9-1
+- several "meteo" palettes now classified as "div" (instead of "seq")
+
 # cols4all 0.9
 - palettes added: "stevens" sequential
 - palette series added: "gmt", "meteo", and "ocean"

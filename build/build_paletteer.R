@@ -8,7 +8,6 @@ library(paletteer)
 table(palettes_c_names$type)
 
 
-palettes_c
 
 # discrete
 table(palettes_d_names$type)
@@ -80,6 +79,8 @@ df_c = palettes_c_names
 df_c$type = ifelse(df_c$type %in% c("sequantial", "sequential"), "seq", ifelse(df_c$type == "diverging", "div", "cat"))
 df_c$n = ifelse(df_c$type == "cat", 36, ifelse(df_c$type == "seq", 9, 11))
 pals_c = unname(do.call(mapply, c(as.list(df_c), list(SIMPLIFY = FALSE, FUN = function(package, palette, type, n) {
+	print(package)
+	print(palette)
 	if (n == 36) {
 		xs = lapply(3:n, function(i) {
 			substr(as.character(paletteer_c(paste0(package, "::", palette), n = i)), 1, 7)

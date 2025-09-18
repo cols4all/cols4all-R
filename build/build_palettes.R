@@ -983,7 +983,7 @@ local({
 	#names(meteo) = sub("_[0-9]{1,2}lev$", "", names(meteo))
 
 	meteo_type = rep("seq", length(meteo))
-	meteo_type[names(meteo) %in% c("hotcold_18lev", "hotcolr_19lev", "precip_diff_12lev", "precip4_diff_19lev")] = "div"
+	meteo_type[names(meteo) %in% c("hotcold_18lev", "hotcolr_19lev", "precip_diff_12lev", "precip4_diff_19lev", "sunshine_diff_12lev", "temp_19lev", "temp_diff_18lev")] = "div"
 
 	meteo_type[sapply(meteo, length) == 2] = "cat"
 
