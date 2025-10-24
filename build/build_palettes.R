@@ -1024,6 +1024,54 @@ if (FALSE) {
 }
 
 
+# bivario
+local({
+	library(reticulate)
+
+
+	# Make sure to point to your venv
+	use_python("~/venv-bivario/bin/python3.11", required = TRUE)
+
+	bivario <- import("bivario")
+	np <- import("numpy")
+
+	bivariate_color_matrix <- function(cmap_name = "coral_ocean", n = 10, m = 10) {
+		cmap <- bivario$NamedBivariateColourmap(cmap_name)
+
+		# Generate sequences
+		values_a <- seq(0, 1, length.out = n)
+		values_b <- seq(0, 1, length.out = m)
+
+		# Make all combinations (grid)
+		grid <- expand.grid(a = values_a, b = values_b)
+
+		# Call cmap on vectors of all combinations
+		rgb_array <- cmap(values_a = grid$a, values_b = grid$b)
+
+		# Convert Python array to R and scale to 0-255
+		rgb_array <- round(py_to_r(rgb_array) * 255)
+
+		# Convert to hex
+		hex_colors <- sprintf("#%02X%02X%02X", rgb_array[,1], rgb_array[,2], rgb_array[,3])
+
+		# Reshape into n x m matrix
+		color_matrix <- matrix(hex_colors, nrow = n, ncol = m, byrow = TRUE)
+
+		return(color_matrix)
+	}
+
+	nms = names(bivario$palettes$BIVARIATE_CORNER_PALETTES)
+
+	pals = lapply(nms, function(nm) {
+		bivariate_color_matrix(nm, 7, 7)
+	})
+	names(pals) = nms
+
+	cd = c4a_data(pals, types = "bivs", series = "bivario")
+	c4a_load(cd)
+	c4a_gui()
+})
+
 .z = get("z", .C4A)
 .s = get("s", .C4A)
 
