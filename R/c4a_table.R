@@ -1,5 +1,5 @@
 table_columns = function(type, show.scores) {
-	if (type %in% c("seq", "div", "cyc")) {
+	if (type %in% c("seq", "div", "cyc", "bivs", "bivd", "bivg")) {
 		qn = character(0)
 		qs = character(0)
 	} else {
