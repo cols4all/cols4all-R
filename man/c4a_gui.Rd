@@ -13,7 +13,7 @@ c4a_table(
   m = NULL,
   continuous = FALSE,
   filters = character(0),
-  cvd.sim = c("none", "deutan", "protan", "tritan"),
+  cvd.sim = c("none", "bw", "deutan", "protan", "tritan"),
   sort = "name",
   text.format = "hex",
   text.col = "same",
@@ -37,7 +37,7 @@ c4a_table(
 
 \item{filters}{filters to be applied. A character vector with a subset from:\code{"nmax"} (only palettes where \code{n = nmax}, which is only applicable for categorical palettes),  \code{"cbf"} (colorblind-friendly), \code{"fair"} (fairness),\code{"naming"} (nameability),  \code{"crW"} (sufficient contrast ratio with white), and \code{"crB"} (sufficient contrast ratio with black). By default an empty vector, so no filters are applied.}
 
-\item{cvd.sim}{color vision deficiency simulation: one of \code{"none"}, \code{"deutan"}, \code{"protan"}, \code{"tritan"}}
+\item{cvd.sim}{color vision deficiency simulation: one of \code{"none"}, \code{"bw"}, \code{"deutan"}, \code{"protan"}, \code{"tritan"}}
 
 \item{sort}{column name to sort the data. The available column names depend on the arguments \code{type} and \code{show.scores}. They are listed in the warning message. Use a \code{"-"} prefix to reverse the order.}
 

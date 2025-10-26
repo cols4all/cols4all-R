@@ -9,7 +9,7 @@ get_CR_matrix = function(p) {
 	m
 }
 
-get_dist_matrix = function(p, cvd = c("none", "deutan", "protan", "tritan"), whole_matrix = FALSE, bgcol = NULL) {
+get_dist_matrix = function(p, cvd = c("none", "bw", "deutan", "protan", "tritan"), whole_matrix = FALSE, bgcol = NULL) {
 	cvd = match.arg(cvd)
 	m = if (cvd == "none") {
 		palette_dist_bg(p, bgcol = bgcol)
@@ -24,10 +24,11 @@ get_dist_matrix = function(p, cvd = c("none", "deutan", "protan", "tritan"), who
 
 
 
-sim_cvd = function(pal, cvd = c("none", "deutan", "protan", "tritan")) {
+sim_cvd = function(pal, cvd = c("none", "bw", "deutan", "protan", "tritan")) {
 	cvd = match.arg(cvd)
 	switch(cvd,
 	       none = function(x) x,
+		   bw = hex_to_gray,
 		   deutan = colorspace::deutan,
 		   protan = colorspace::protan,
 		   tritan = colorspace::tritan)(pal)

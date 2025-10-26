@@ -225,6 +225,13 @@ is_light <- function(col) {
 	apply(colrgb * c(.299, .587, .114), MARGIN=2, sum) >= 128
 }
 
+hex_to_gray <- function(hex) {
+	rgb_vals <- col2rgb(hex) / 255
+	# standard luminance formula
+	gray <- round(0.299 * rgb_vals[1, ] + 0.587 * rgb_vals[2, ] + 0.114 * rgb_vals[3, ], 3)
+	gray_hex <- rgb(gray, gray, gray)
+	return(gray_hex)
+}
 
 
 

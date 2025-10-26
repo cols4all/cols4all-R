@@ -240,7 +240,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 					 				  #shiny::
 					 				  ),
 					 	shiny::column(width = 3,
-					 				  shiny::radioButtons("cvd", "Color vision", choices = c(Normal = "none", 'Deutan (red-green blind)' = "deutan", 'Protan (also red-green blind)' = "protan", 'Tritan (blue-yellow)' = "tritan"), selected = "none"),
+					 				  shiny::radioButtons("cvd", "Color vision", choices = c(Normal = "none", "Black & white" = "bw", 'Deutan (red-green blind)' = "deutan", 'Protan (also red-green blind)' = "protan", 'Tritan (blue-yellow)' = "tritan"), selected = "none"),
 					 				  shiny::radioButtons("textformat", "Text", choices = c("None" = "none", "Hex" = "hex", "RGB" = "RGB", "HCL" = "HCL"), inline = T),
 					 				  shiny::div(class = "control-label3", "Underlying scores"),
 					 				  shiny::div(style = "margin-top: 5px;", shiny::checkboxInput("advanced", "Show scores", value = FALSE))
@@ -452,7 +452,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 					shiny::column(width = 4,
 								  shiny::selectizeInput("APPPal", "Palette", choices = init_pal_list)),
 					shiny::column(width = 4,
-								  shiny::selectizeInput("APPcvd", "Color vision deficinecy", choices = c(Normal = "none", 'Deutan (red-green blind)' = "deutan", 'Protan (also red-green blind)' = "protan", 'Tritan (blue-yellow)' = "tritan"), selected = "none")))),
+								  shiny::selectizeInput("APPcvd", "Color vision deficinecy", choices = c(Normal = "none", "Black & white" = "bw", 'Deutan (red-green blind)' = "deutan", 'Protan (also red-green blind)' = "protan", 'Tritan (blue-yellow)' = "tritan"), selected = "none")))),
 
 					h4title("Points"),
 					shiny::fluidRow(
