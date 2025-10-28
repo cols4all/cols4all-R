@@ -1,5 +1,6 @@
 # cols4all 0.10
 - palettes from bivario added
+- black and white option added
 
 # cols4all 0.9-1
 - several "meteo" palettes now classified as "div" (instead of "seq")
