@@ -9,12 +9,12 @@ get_CR_matrix = function(p) {
 	m
 }
 
-get_dist_matrix = function(p, cvd = c("none", "bw", "deutan", "protan", "tritan"), whole_matrix = FALSE, bgcol = NULL) {
+get_dist_matrix = function(p, cvd = c("none", "deutan", "protan", "tritan"), whole_matrix = FALSE, bgcol = NULL) {
 	cvd = match.arg(cvd)
 	m = if (cvd == "none") {
-		palette_dist_bg(p, bgcol = bgcol)
+		palette_dist_bg(p, bgcol = bgcol, method = "bg-norm-cr-spread")
 	} else {
-		palette_dist_bg(p, cvd = substr(cvd, 1, 3), bgcol = bgcol)
+		palette_dist_bg(p, cvd = substr(cvd, 1, 3), bgcol = bgcol, method = "bg-norm-cr-spread")
 	}
 	if (whole_matrix) {
 		m[lower.tri(m)] = t(m)[lower.tri(m)]
@@ -23,15 +23,19 @@ get_dist_matrix = function(p, cvd = c("none", "bw", "deutan", "protan", "tritan"
 }
 
 
-
-sim_cvd = function(pal, cvd = c("none", "bw", "deutan", "protan", "tritan")) {
+sim_cvd = function(pal, cvd = c("none", "bw", "deutan", "protan", "tritan"), coltemp = "6500", severity = 1) {
 	cvd = match.arg(cvd)
-	switch(cvd,
-	       none = function(x) x,
-		   bw = hex_to_gray,
-		   deutan = colorspace::deutan,
-		   protan = colorspace::protan,
-		   tritan = colorspace::tritan)(pal)
+	cols = switch(cvd,
+				  none   = function(x, severity) x,
+				  deutan = colorspace::deutan,
+				  protan = colorspace::protan,
+				  tritan = colorspace::tritan)(pal, severity = severity)
+	ct = as.integer(coltemp)
+
+	if (ct != 6500) {
+		cols = apply_kelvin_filter(cols, ct, kelvin_table)
+	}
+	cols
 }
 
 c4a_plot_dist_matrix = function(p, id1 = NULL, id2 = NULL, cvd = "none", dark = FALSE, title = "Delta E", advanced = FALSE, bc_adj = FALSE) {
@@ -44,7 +48,7 @@ c4a_plot_CR_matrix = function(p, id1 = NULL, id2 = NULL, cvd = "none", dark = FA
 
 get_gradient = function(v) pmin(1, (v/100) ^ (0.25))
 
-plot_matrix = function(p, id1 = NULL, id2 = NULL, type = c("CR", "dist"), cvd = "none", dark = FALSE, title = "Contrast ratio", advanced = FALSE, bc_adj = FALSE) {
+plot_matrix = function(p, id1 = NULL, id2 = NULL, type = c("CR", "dist"), cvd = "none", coltemp = "6500", dark = FALSE, title = "Contrast ratio", advanced = FALSE, bc_adj = FALSE) {
 	n = length(p)
 	type = match.arg(type)
 
@@ -64,7 +68,7 @@ plot_matrix = function(p, id1 = NULL, id2 = NULL, type = c("CR", "dist"), cvd = 
 		get_dist_matrix(p, cvd = cvd, whole_matrix = TRUE, bgcol = bgcol)
 	}
 
-	p = sim_cvd(p, cvd)
+	p = sim_cvd(p, cvd, coltemp)
 
 
 	#m[lower.tri(m)] = NA

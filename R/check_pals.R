@@ -219,6 +219,25 @@ check_cat_pal = function(p) {
 	c(sc, prop, rgb)
 }
 
+# experimental: with white
+check_cat_pal2 = function(p) {
+	if (length(p) == 1) return(c(min_dist = Inf))
+	cvds = c("deutan", "protan", "tritan")
+
+	scores = sapply(cvds, function(cvd) {
+		get_dist_matrix(p, cvd = cvd)
+	})
+
+	scores_wt = sapply(cvds, function(cvd) {
+		get_dist_matrix(p, cvd = cvd, bgcol = "#ffffff")
+	})
+
+	sc = c(min_dist = as.integer(round(min(scores, na.rm = TRUE) * 100)), min_dist_wt = as.integer(round(min(scores_wt, na.rm = TRUE) * 100)), nameability = as.integer(nameability(p)))
+	prop = hcl_prop(p)
+	rgb = rgb_prop(p)
+
+	c(sc, prop, rgb)
+}
 
 is_light <- function(col) {
 	colrgb <- col2rgb(col)

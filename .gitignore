@@ -47,3 +47,4 @@ inst/markdown/*.pdf
 docs
 
 local/
+.positai

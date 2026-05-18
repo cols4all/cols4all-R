@@ -7,10 +7,13 @@
 }
 
 body {
-    padding-top: 1em;
-    line-height: 1em;
-    font-size: 12px !important;
+  padding-top: 1em;
+  line-height: 1em;
+  font-size: 12px !important;
+  background-color: #ffffff;
+  color: #222222;
 }
+
 
 
 
@@ -85,4 +88,234 @@ div.form-group.shiny-input-container { margin: 0 0 0 0; }
 		column-count: 3;
 	-moz-column-fill: auto;
 	-column-fill: auto;
+}
+
+
+
+
+
+
+
+/* =========================================================
+   BASE UI ELEMENTS
+========================================================= */
+
+.well {
+  background-color: #f5f5f5;
+  border-color: #dddddd;
+}
+
+.selectize-input,
+.form-control {
+  background-color: #ffffff;
+  color: #222222;
+}
+
+.selectize-control {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-bottom: 0 !important;
+  font-size: 12px !important;
+}
+
+.btn-default {
+  background-color: #ffffff;
+  color: #333333;
+}
+
+.btn-default:hover {
+  background-color: #ffffff;
+  color: #666666;
+}
+
+/* =========================================================
+   LOGO (filtered on purpose)
+========================================================= */
+
+.logo {
+  filter: none;
+}
+
+body.temp-4000 .logo {
+  filter: sepia(25%) saturate(110%) hue-rotate(-5deg);
+}
+
+body.temp-2700 .logo {
+  filter: sepia(40%) saturate(120%) hue-rotate(-8deg);
+}
+
+body.temp-2200 .logo {
+  filter: sepia(60%) saturate(130%) hue-rotate(-12deg);
+}
+
+/* =========================================================
+   KELVIN THEMES — MANUAL, PERCEPTUAL
+========================================================= */
+
+/* ---------- 4000 K ---------- */
+
+body.temp-4000 {
+  background-color: #f4f1ea;
+  color: #2b2b2b;
+}
+
+body.temp-4000 .well {
+  background-color: #ede7dc;
+  border-color: #cfc6b8;
+}
+
+body.temp-4000 .selectize-input,
+body.temp-4000 .form-control {
+  background-color: #f8f5ef;
+  color: #2b2b2b;
+}
+
+/* ---------- 2700 K ---------- */
+
+body.temp-2700 {
+  background-color: #f3e6d3;
+  color: #3a2e1f;
+}
+
+body.temp-2700 .well {
+  background-color: #ead8bf;
+  border-color: #c9b090;
+}
+
+body.temp-2700 .selectize-input,
+body.temp-2700 .form-control {
+  background-color: #f7ecd9;
+  color: #3a2e1f;
+}
+
+/* ---------- 2200 K ---------- */
+
+body.temp-2200 {
+  background-color: #ecd6b3;
+  color: #3b2a14;
+}
+
+body.temp-2200 .well {
+  background-color: #e2c39a;
+  border-color: #b9976c;
+}
+
+body.temp-2200 .selectize-input,
+body.temp-2200 .form-control {
+  background-color: #f1dcc1;
+  color: #3b2a14;
+}
+
+/* =========================================================
+   ION.RANGESLIDER (Shiny sliderInput)
+========================================================= */
+
+/* Base (neutral, no blue) */
+
+.irs-line {
+  background-color: #cccccc !important;
+}
+
+.irs-bar {
+  background-color: #999999 !important;
+}
+
+.irs-handle > i:first-child {
+  background-color: #777777 !important;
+}
+
+.irs-single {
+  background-color: #777777 !important;
+  color: #ffffff !important;
+}
+
+/* ---------- 4000 K ---------- */
+
+body.temp-4000 .irs-line {
+  background-color: #e0d2b8 !important;
+}
+
+body.temp-4000 .irs-bar {
+  background-color: #c9b58c !important;
+}
+
+body.temp-4000 .irs-handle > i:first-child,
+body.temp-4000 .irs-single {
+  background-color: #b09a6a !important;
+}
+
+/* ---------- 2700 K ---------- */
+
+body.temp-2700 .irs-line {
+  background-color: #d9b889 !important;
+}
+
+body.temp-2700 .irs-bar {
+  background-color: #c0955c !important;
+}
+
+body.temp-2700 .irs-handle > i:first-child,
+body.temp-2700 .irs-single {
+  background-color: #a8743f !important;
+}
+
+/* ---------- 2200 K ---------- */
+
+body.temp-2200 .irs-line {
+  background-color: #cfa46b !important;
+}
+
+body.temp-2200 .irs-bar {
+  background-color: #b47f45 !important;
+}
+
+body.temp-2200 .irs-handle > i:first-child,
+body.temp-2200 .irs-single {
+  background-color: #8f5f2f !important;
+}
+
+/* =========================================================
+   DARK MODE (orthogonal to Kelvin)
+========================================================= */
+
+body.dark {
+  background-color: #000000;
+  color: #bbbbbb;
+}
+
+body.dark .well {
+  background-color: #090909;
+  border-color: #444444;
+}
+
+body.dark .selectize-input,
+body.dark .selectize-control.single .selectize-input.input-active {
+  background-color: #000000;
+  color: #bbbbbb;
+}
+
+body.dark .selectize-dropdown {
+  background-color: #000000;
+  color: #808080;
+}
+
+body.dark .selectize-dropdown .active {
+  background-color: #000000;
+  color: #88b5dd;
+}
+
+body.dark .btn-default {
+  background-color: #000000;
+  color: #d0d0d0;
+}
+
+body.dark .btn-default:hover {
+  background-color: #000000;
+  color: #88b5dd;
+}
+
+body.dark .nav-tabs > li > a,
+body.dark .nav-tabs > li.active > a {
+  background-color: #000000 !important;
+  color: #bbbbbb !important;
 }

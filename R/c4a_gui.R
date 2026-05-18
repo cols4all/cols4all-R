@@ -162,8 +162,9 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 		shinyjs::useShinyjs(),
 		shiny::tags$script(src = "https://kit.fontawesome.com/f175d6d133.js"),
 		shiny::tags$head(shiny::includeCSS(system.file("www/light.css", package = "cols4all"))),
-		shiny::tags$head(shiny::includeCSS(system.file("www/dark.css", package = "cols4all"))),
 		shiny::tags$head(shiny::includeCSS(system.file("www/misc.css", package = "cols4all"))),
+		shiny::tags$div(
+			id = "app",
 		shiny::absolutePanel(
 			top = 25,
 			right = 40,
@@ -182,7 +183,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 							value = "tab_catel",
 					 shiny::fluidRow(
 					 	shiny::column(width = 3,
-					 				  shiny::img(src = "imgResources/cols4all_logo.png", height="200", align = "center", 'vertical-align' = "center")),
+					 				  shiny::img(src = "imgResources/cols4all_logo.png", height="200", class = "logo", align = "center", 'vertical-align' = "center")),
 					 	shiny::column(width = 3,
 					 				  shiny::radioButtons("type1", "Palette type", choices = types1, selected = type1),
 					 				   				  				  shiny::conditionalPanel(
@@ -240,6 +241,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 					 				  #shiny::
 					 				  ),
 					 	shiny::column(width = 3,
+					 				  shiny::radioButtons("coltemp", "Color temperature", choices = c("6500 K (D65 standard)" = "6500", '4000 K (office)' = "4000", '2700 K (home)' = "2700", '2200 K (night mode)' = "2200"), selected = "6500"),
 					 				  shiny::radioButtons("cvd", "Color vision", choices = c(Normal = "none", "Black & white" = "bw", 'Deutan (red-green blind)' = "deutan", 'Protan (also red-green blind)' = "protan", 'Tritan (blue-yellow)' = "tritan"), selected = "none"),
 					 				  shiny::radioButtons("textformat", "Text", choices = c("None" = "none", "Hex" = "hex", "RGB" = "RGB", "HCL" = "HCL"), inline = T),
 					 				  shiny::div(class = "control-label3", "Underlying scores"),
@@ -500,6 +502,9 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
         });
       });
     ')
+
+	)
+
 	))
 
 
@@ -548,6 +553,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 										 CR = colorspace::contrast_ratio(pal_init[1], pal_init[2]),
 										 type = type12,
 										 cvd = "none",
+										 coltemp = "6500",
 										 b = approx_blues(pal_init),
 										 r = approx_reds(pal_init))
 
@@ -582,6 +588,13 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 
 		})
 
+		shiny::observeEvent(input$coltemp, {
+			shinyjs::runjs(sprintf("
+			    document.body.classList.remove('temp-6500','temp-4000','temp-2700','temp-2200');
+			    document.body.classList.add('temp-%s');
+			  ", input$coltemp))
+
+		})
 
 		shiny::observeEvent(get_type12(), {
 			type = get_type12()
@@ -701,6 +714,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 				 trigger = get_trigger(),
 				 type = type,
 				 cvd = input$cvd,
+				 coltemp = input$coltemp,
 				 sort = input$sort,
 				 sortRev = input$sortRev,
 				 series = series_d(),
@@ -1015,7 +1029,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 
 
 				tab = if (is.null(values$prep)) NULL
-				else plot_table(p = values$prep, text.format = values$format, text.col = values$textcol, include.na = values$na, cvd.sim = values$cvd, verbose = FALSE)
+				else plot_table(p = values$prep, text.format = values$format, text.col = values$textcol, include.na = values$na, cvd.sim = values$cvd, coltemp = values$coltemp, verbose = FALSE)
 			}
 			if (is.null(tab)) {
 				kableExtra::kbl(data.frame("No palettes found. Please change the selection."), col.names = " ")
@@ -1216,7 +1230,11 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 			if (!is.na(ids$x)) tab_vals$idB2 = ids$x
 			if (!is.na(ids$y)) tab_vals$idB1 = ids$y
 
-			if (!is.na(ids$x) || !is.na(ids$y)) tab_vals$CR = colorspace::contrast_ratio(tab_vals$idB1, tab_vals$idB2)
+			if (!is.na(ids$x) || !is.na(ids$y)) {
+				cr = colorspace::contrast_ratio(pal[tab_vals$idB1], pal[tab_vals$idB2])
+				#print(cr)
+				tab_vals$CR = cr
+			}
 		})
 
 

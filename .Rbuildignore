@@ -17,3 +17,5 @@
 ^\.github$
 ^man/figures$
 ^vignettes$
+^\.positai$
+^\.claude$

@@ -157,7 +157,7 @@ prep_table = function(type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd
 	list(zn = zn, n = n, m = m, columns = columns, continuous = continuous, type = type, qn = qn, ql = ql)
 }
 
-plot_table = function(p, text.format, text.col, include.na, cvd.sim, verbose) {
+plot_table = function(p, text.format, text.col, include.na, cvd.sim, coltemp, verbose) {
 	type = p$type
 	zn = p$zn
 	qn = p$qn
@@ -265,7 +265,7 @@ plot_table = function(p, text.format, text.col, include.na, cvd.sim, verbose) {
 	for (cn in colNames) {
 		if (continuous && cn == "1") {
 			if (cvd.sim != "none") {
-				cm = apply(cm, MARGIN = 2, sim_cvd, cvd = cvd.sim)
+				cm = apply(cm, MARGIN = 2, sim_cvd, cvd = cvd.sim, coltemp = coltemp)
 			}
 
 			css = apply(cm, MARGIN = 1, function(cols) {
@@ -291,7 +291,7 @@ plot_table = function(p, text.format, text.col, include.na, cvd.sim, verbose) {
 			sel = (!is.na(cols) & cols != "")
 			cols[!sel] = ""
 			cols_cvd = cols
-			cols_cvd[sel] = sim_cvd(cols[sel], cvd.sim)
+			cols_cvd[sel] = sim_cvd(cols[sel], cvd = cvd.sim, coltemp = coltemp)
 
 			textcol = if (text.col == "same") {
 				cols_cvd
@@ -492,6 +492,7 @@ plot_table = function(p, text.format, text.col, include.na, cvd.sim, verbose) {
 #' @param continuous should the palettes as continuous instead of discrete. Only applicable for `"seq"`, `"div"`, and `"cyc"`.
 #' @param filters filters to be applied. A character vector with a subset from:`"nmax"` (only palettes where `n = nmax`, which is only applicable for categorical palettes),  `"cbf"` (colorblind-friendly), `"fair"` (fairness),`"naming"` (nameability),  `"crW"` (sufficient contrast ratio with white), and `"crB"` (sufficient contrast ratio with black). By default an empty vector, so no filters are applied.
 #' @param cvd.sim color vision deficiency simulation: one of `"none"`, `"bw"`, `"deutan"`, `"protan"`, `"tritan"`
+#' @param col.temp color temperature, by default 6500K
 #' @param sort column name to sort the data. The available column names depend on the arguments `type` and `show.scores`. They are listed in the warning message. Use a `"-"` prefix to reverse the order.
 #' @param text.format The format of the text of the colors. One of `"hex"`, `"RGB"` or `"HCL"`.
 #' @param text.col The text color of the colors. By default `"same"`, which means that they are the same as the colors themselves (so invisible, but available for selection). `"auto"` means automatic: black for light colors and white for dark colors.
@@ -515,8 +516,8 @@ plot_table = function(p, text.format, text.col, include.na, cvd.sim, verbose) {
 #' @return An HMTL table (`kableExtra` object)
 #' @rdname c4a_gui
 #' @name c4a_table
-c4a_table = function(type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd", "bivg"), n = NULL, m = NULL, continuous = FALSE, filters = character(0), cvd.sim = c("none", "bw", "deutan", "protan", "tritan"), sort = "name", text.format = "hex", text.col = "same", series = "all", range = NA, colorsort = "orig", include.na = FALSE, show.scores = FALSE, columns = NA, verbose = TRUE) {
+c4a_table = function(type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd", "bivg"), n = NULL, m = NULL, continuous = FALSE, filters = character(0), cvd.sim = c("none", "bw", "deutan", "protan", "tritan"), col.temp = 6500, sort = "name", text.format = "hex", text.col = "same", series = "all", range = NA, colorsort = "orig", include.na = FALSE, show.scores = FALSE, columns = NA, verbose = TRUE) {
 	cvd.sim = match.arg(cvd.sim)
 	p = prep_table(type = type, n = n, m = m, continuous = continuous, filters = filters, sort = sort, series = series, range = range, colorsort = colorsort, show.scores = show.scores, columns = columns, verbose = verbose)
-	plot_table(p = p, text.format = text.format, text.col = text.col, include.na = include.na, cvd.sim = cvd.sim, verbose = verbose)
+	plot_table(p = p, text.format = text.format, text.col = text.col, include.na = include.na, cvd.sim = cvd.sim, coltemp = as.character(col.temp), verbose = verbose)
 }
