@@ -1,0 +1,370 @@
+# Colors for all!
+
+**cols4all** is an R package for selecting color palettes. “Color for
+all” refers to our mission that colors should be usable for not just
+people with normal color vision, but also for people with color vision
+deficiency. Currently, this package contains palettes from several
+popular and lesser known color palette series. Users can also add their
+own palette series.
+
+Color palettes are well organized and made consistent with each other.
+Moreover, they are scored on several aspects: color-blind-friendliness,
+the presence of intense colors (which should be avoided), the overall
+aesthetic harmony, and how many different hues are used. Finally, for
+each color palette a color for missing values is assigned, which is
+especially important for spatial data visualization. Currently we
+support several types: *categorical* (qualitative) palettes,
+*sequential* palettes, *diverging* palettes, *cycling* palettes and
+*bivariate* palettes (divided into four subtypes).
+
+## Installation
+
+**cols4all** is available on CRAN:
+
+``` r
+
+install.packages("cols4all", dependencies = TRUE)
+```
+
+The development version can be installed as follows:
+
+``` r
+
+install.packages("remotes")
+remotes::install_github("cols4all/cols4all-R", dependencies = TRUE)
+```
+
+## Getting started
+
+Load the package:
+
+``` r
+
+library(cols4all)
+```
+
+The main tool is a dashboard, which is started with:
+
+``` r
+
+c4a_gui()
+```
+
+[![](reference/figures/cols4all2.jpg)](https://cols4all.github.io/man/figures/cols4all2.jpg)
+
+What palettes are available? That is, by default; other palettes can be
+added!
+
+``` r
+
+c4a_series()
+#>        series                                         description
+#> 1      brewer                                ColorBrewer palettes
+#> 2       carto                          Palettes designed by CARTO
+#> 3    cols4all                  cols4all palettes (in development)
+#> 4         gmt                 Palettes from General Mapping Tools
+#> 5         hcl  Palettes from the Hue Chroma Luminance color space
+#> 6      kovesi                   Palettes designed by Peter Kovesi
+#> 7  matplotlib         Palettes from the Python library matplotlib
+#> 8         met Palettes inspired by The Metropolitan Museum of Art
+#> 9       meteo           Palettes by Oliver Fuhrer from MeteoSwiss
+#> 10       misc                              Miscellaneous palettes
+#> 11      ocean          Colormaps for Oceanography by Thyng et al.
+#> 12      parks                 Palettes inspired by National Parks
+#> 13       poly               Qualitative palettes with many colors
+#> 14    powerbi                    Palettes from Microsoft Power BI
+#> 15      scico             Scientific colour maps by Fabio Crameri
+#> 16    seaborn            Palettes from the Python library Seaborn
+#> 17    stevens                Bivariate palettes by Joshua Stevens
+#> 18    tableau                        Palettes designed by Tableau
+#> 19        tol                       Palettes designed by Paul Tol
+#> 20        wes                   Palettes from Wes Anderson movies
+```
+
+## Using the tool
+
+Use the tool to compare palettes and if needed analyse a palette in
+depth (via the other tabs).
+
+Find a trade-off you like among the following properties (the columns in
+the main table):
+
+- Colorblind friendly: Is the palette color blind friendly?
+- Fair: Is the palette fair? In a fair palette, colors stand out about
+  equally.
+- Hues: What hue ranges are used? All across the (rainbow) color
+  spectrum, or a limited range?
+- Vivid: Are there any colors that are very saturated? Perhaps a little
+  too much?
+- Contrast: Is there sufficient contrast against white, black (using
+  WACG criteria) and between colors?
+- 3D Blues: If blue is a palette color, a 3D visual illusion could
+  appear.
+- Naming (in development): How well can palette colors be named?
+
+### Example 1
+
+When we are looking for a fair categorical palette of seven colors that
+is as color blind friendly as possible, then filter on “Fair”, and sort
+by “Colorblind-friendly”:
+
+[![](reference/figures/cols4all_fair_sort_cbf.jpg)](https://cols4all.github.io/man/figures/cols4all_fair_sort_cbf.jpg)
+
+This inspired us to develop our own palettes: see these `cols4all`
+palettes below.
+
+### Example 2
+
+Say we need a diverging palette that is color blind friendly, and what
+to choose one by eye. Then filter by “Colorblind-friendly” and sort by
+“Hue Middle L” (the hue of the left wing):
+
+[![](reference/figures/cols4all_div.jpg)](https://cols4all.github.io/man/figures/cols4all_div.jpg)
+
+Reverse sorting is also applied.
+
+## Preliminary set of new `cols4all` palettes
+
+We applied a basic heuristic to explore palettes that score well on a
+mix of the properties named above
+
+[![](reference/figures/c4a_pals.jpg)](https://cols4all.github.io/man/figures/c4a_pals.jpg)
+
+`area7`, `area8` and `area9` are fair, contain low pastel colors, and
+are color-blind friendly (up to 7 colors). So ideal for maps and other
+space-filling visualizations! These are used in
+[`tmap4`](https://github.com/r-tmap/tmap).
+
+[![](reference/figures/area7.jpg)](https://cols4all.github.io/man/figures/area7.jpg)
+
+`area7d`, `area8d` and `area9d` similar but for dark mode:.
+
+[![](reference/figures/area7d.jpg)](https://cols4all.github.io/man/figures/area7d.jpg)
+
+`line7`, `line8` and `line9` are colors with good contrast against both
+black and white, and are also colorblind-friendly to some extent. So
+ideal for line graphs and scatter plots:
+
+[![](reference/figures/line7_wt.jpg)](https://cols4all.github.io/man/figures/line7_wt.jpg)
+[![](reference/figures/line7_bk.jpg)](https://cols4all.github.io/man/figures/line7_bk.jpg)
+
+Finally `friendly7` … `friendly13` are colorblind-friendly palettes
+(disregarding the other properties):
+
+[![](reference/figures/friendly13.jpg)](https://cols4all.github.io/man/figures/friendly13.jpg)
+
+## `ggplot2` integration
+
+``` r
+
+library(ggplot2)
+data("diamonds")
+diam_exp = diamonds[diamonds$price >= 15000, ]
+
+# discrete categorical scale
+ggplot(diam_exp, aes(x = carat, y = price, color = color)) +
+    geom_point(size = 2) +
+    scale_color_discrete_c4a_cat("carto.safe") +
+    theme_light()
+```
+
+![](reference/figures/README-unnamed-chunk-7-1.png)
+
+``` r
+
+
+# continuous diverging scale
+ggplot(diam_exp, aes(x = carat, y = depth, color = price)) +
+    geom_point(size = 2) +
+    scale_color_continuous_c4a_div("wes.zissou1", mid = mean(diam_exp$price)) +
+    theme_light()
+```
+
+![](reference/figures/README-unnamed-chunk-7-2.png)
+
+## Overview of functions
+
+Main functions:
+
+- `c4a_gui` Dashboard for analyzing the palettes
+- `c4a` Get the colors from a palette (`c4a_na` for the associated color
+  for missing values)
+- `c4a_plot` Plot a color palette
+
+Palette names and properties:
+
+- `c4a_palettes` Get available palette names
+- `c4a_series` Get available series names
+- `c4a_types` Get implemented types
+- `c4a_overview` Get an overview of palettes per series x type.
+- `c4a_citation` Show how to cite palettes (with bibtex code).
+- `c4a_info` Get information from a palette, such as type and maximum
+  number of colors
+- `.P` Environment via which palette names can be browsed with
+  auto-completion (using `$`)
+
+Importing and exporting palettes:
+
+- `c4a_data` Build color palette data
+- `c4a_load` Load color palette data
+- `c4a_sysdata_import` Import system data
+- `c4a_sysdata_export` Export system data
+
+Edit color palette data
+
+- `c4a_duplicate` Duplicates a color palette
+- `c4a_modify` Modifies palette colors
+
+ggplot2
+
+- `scale_<aesthetic>_<mapping>_c4a_<type>`
+  e.g. `scale_color_continuous_c4a_div` Add scale to ggplot2.
+
+## Other R functions
+
+What palettes are available, e.g diverging from the hcl series?
+
+``` r
+
+# Diverging palettes from the 'hcl' series
+c4a_palettes(type = "div", series = "hcl")
+#>  [1] "hcl.blue_red"     "hcl.blue_red2"    "hcl.blue_red3"    "hcl.red_green"   
+#>  [5] "hcl.purple_green" "hcl.purple_brown" "hcl.green_brown"  "hcl.blue_yellow2"
+#>  [9] "hcl.blue_yellow3" "hcl.green_orange" "hcl.cyan_magenta"
+```
+
+Give me the colors!
+
+``` r
+
+# select purple green palette from the hcl series:
+c4a("hcl.purple_green", 11)
+#>  [1] "#492050" "#82498C" "#B574C2" "#D2A9DB" "#E8D4ED" "#F1F1F1" "#C8E1C9"
+#>  [8] "#91C392" "#4E9D4F" "#256C26" "#023903"
+
+# get the associated color for missing values
+c4a_na("hcl.purple_green")
+#> [1] "#BABABA"
+```
+
+Plot these colors:
+
+``` r
+
+c4a_plot_cvd("hcl.purple_green", 11, include.na = TRUE)
+```
+
+![](reference/figures/README-unnamed-chunk-10-1.png)
+
+## Related R packages
+
+The foundation of this package is another R package:
+[**colorspace**](https://colorspace.r-forge.r-project.org/). We use this
+package to analyse colors. For this purpose and specifically for color
+blind friendliness checks, we also use
+[**colorblindcheck**](https://github.com/Nowosad/colorblindcheck).
+
+There are a few other packages with a large collection of color
+palettes, in particular [**pals**](https://kwstat.github.io/pals/) and
+[**paletteer**](https://github.com/EmilHvitfeldt/paletteer). There are a
+few features that distinguish **cols4all** from those packages:
+
+- Color palettes are characterized and analysed. Properties such as
+  color blindness, fairness (whether colors stand out about equally),
+  and contrast are determined for each palette.
+
+- Bivariate color palettes are available.
+
+- Own color palettes can be loaded and analysed.
+
+- Colors for missing values are made explicit.
+
+- There is native support for **ggplot2** and **tmap** (as of the
+  upcoming version 4).
+
+- There are a couple of exporting options, including (bibtex) citation.
+
+## Feedback welcome!
+
+- Is everything working as expected?
+
+- Do you miss certain palettes?
+
+- Do you have ideas for improvement how to measure palette properties?
+
+Let us know! (via github issues)
+
+# Package index
+
+## All functions
+
+- [`c4a()`](https://cols4all.github.io/reference/c4a.md)
+  [`c4a_ramp()`](https://cols4all.github.io/reference/c4a.md)
+  [`c4a_na()`](https://cols4all.github.io/reference/c4a.md) : Get a
+  cols4all color palette
+- [`c4a_citation()`](https://cols4all.github.io/reference/c4a_citation.md)
+  : Show how to cite palettes
+- [`c4a_data()`](https://cols4all.github.io/reference/c4a_data.md)
+  [`c4a_load()`](https://cols4all.github.io/reference/c4a_data.md)
+  [`c4a_data_as_is()`](https://cols4all.github.io/reference/c4a_data.md)
+  : Build and load palette data
+- [`c4a_gui()`](https://cols4all.github.io/reference/c4a_gui.md)
+  [`c4a_table()`](https://cols4all.github.io/reference/c4a_gui.md) :
+  Graphical user interface to analyse palettes
+- [`c4a_info()`](https://cols4all.github.io/reference/c4a_info.md) : Get
+  information from a cols4all palette
+- [`c4a_modify()`](https://cols4all.github.io/reference/c4a_modify.md)
+  [`c4a_duplicate()`](https://cols4all.github.io/reference/c4a_modify.md)
+  : Edit cols4all palettes (in development)
+- [`c4a_options()`](https://cols4all.github.io/reference/c4a_options.md)
+  : Set cols4all options
+- [`c4a_palettes()`](https://cols4all.github.io/reference/c4a_palettes.md)
+  [`c4a_series()`](https://cols4all.github.io/reference/c4a_palettes.md)
+  [`c4a_types()`](https://cols4all.github.io/reference/c4a_palettes.md)
+  [`c4a_overview()`](https://cols4all.github.io/reference/c4a_palettes.md)
+  [`.P`](https://cols4all.github.io/reference/c4a_palettes.md) : Get
+  available palette names and series
+- [`c4a_plot()`](https://cols4all.github.io/reference/c4a_plot.md)
+  [`c4a_plot_cvd()`](https://cols4all.github.io/reference/c4a_plot.md)
+  [`c4a_plot_hex()`](https://cols4all.github.io/reference/c4a_plot.md) :
+  Plot a color palette
+- [`c4a_scores()`](https://cols4all.github.io/reference/c4a_scores.md) :
+  Get information from a cols4all palette
+- [`c4a_sysdata_import()`](https://cols4all.github.io/reference/c4a_sysdata_import.md)
+  [`c4a_sysdata_export()`](https://cols4all.github.io/reference/c4a_sysdata_import.md)
+  [`c4a_sysdata_remove()`](https://cols4all.github.io/reference/c4a_sysdata_import.md)
+  : Import and export system data
+- [`cols4all`](https://cols4all.github.io/reference/cols4all-package.md)
+  [`cols4all-package`](https://cols4all.github.io/reference/cols4all-package.md)
+  : cols4all overview
+- [`scale_color_discrete_c4a_cat()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_colour_discrete_c4a_cat()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_fill_discrete_c4a_cat()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_color_discrete_c4a_seq()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_colour_discrete_c4a_seq()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_fill_discrete_c4a_seq()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_color_discrete_c4a_div()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_colour_discrete_c4a_div()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_fill_discrete_c4a_div()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_color_continuous_c4a_seq()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_colour_continuous_c4a_seq()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_fill_continuous_c4a_seq()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_color_continuous_c4a_div()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_colour_continuous_c4a_div()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_fill_continuous_c4a_div()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_color_binned_c4a_seq()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_colour_binned_c4a_seq()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_fill_binned_c4a_seq()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_color_binned_c4a_div()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_colour_binned_c4a_div()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  [`scale_fill_binned_c4a_div()`](https://cols4all.github.io/reference/scales_ggplot2.md)
+  : col4all scales for ggplot2
+
+# Articles
+
+### All vignettes
+
+- [Analysing and comparing color palettes with
+  cols4all](https://cols4all.github.io/articles/01_paper.md):
+- [Exploring the 2759 palettes from
+  paletteer](https://cols4all.github.io/articles/02_paletteer.md):
