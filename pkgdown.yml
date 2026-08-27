@@ -1,10 +1,10 @@
 pandoc: 3.8.3
-pkgdown: 2.2.0
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   01_paper: 01_paper.html
   02_paletteer: 02_paletteer.html
-last_built: 2026-05-18T14:31Z
+last_built: 2026-08-27T15:16Z
 urls:
   reference: https://cols4all.github.io/reference
   article: https://cols4all.github.io/articles

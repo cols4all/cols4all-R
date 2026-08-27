@@ -44,6 +44,7 @@ A list of options
 | naming_fun_args | List of arguments for `naming_fun` |
 | naming_colors | Vector of prototype colors for the color names (see examples) |
 | naming_softmax | List of parameters for the softmax function applied to the distance matrix |
+| angle_convention | Degrees-of-visual-angle \<-\> pixel conversion used by [`visual_angle_to_px()`](https://cols4all.github.io/reference/visual_angle_to_px.md) / [`px_to_visual_angle()`](https://cols4all.github.io/reference/px_to_visual_angle.md): `"szafir"` (default) reproduces Szafir (2018)'s own in-text px-equivalents; `"standard"` is the textbook chord formula |
 
 ## Examples
 
