@@ -26,6 +26,7 @@
 #' | naming_fun_args | List of arguments for `naming_fun` |
 #' | naming_colors | Vector of prototype colors for the color names (see examples) |
 #' | naming_softmax | List of parameters for the softmax function applied to the distance matrix |
+#' | angle_convention | Degrees-of-visual-angle <-> pixel conversion used by `visual_angle_to_px()` / `px_to_visual_angle()`: `"szafir"` (default) reproduces Szafir (2018)'s own in-text px-equivalents; `"standard"` is the textbook chord formula |
 
 #'
 #' @md
@@ -37,7 +38,7 @@
 c4a_options = function(...) {
 	lst = list(...)
 	e1 = parent.frame()
-	nms = c("defaults", "CBF_th", "CBVF_th", "CBU_th", "CrangeFair", "CrangeUnfair", "LrangeFair", "LrangeUnfair", "Cintense", "Cpastel", "HwidthDivRainbow", "HwidthDivSingle", "HwidthSeqRainbow", "HwidthSeqSingle", "naming_fun", "naming_fun_args", "naming_colors", "naming_softmax")
+	nms = c("defaults", "CBF_th", "CBVF_th", "CBU_th", "CrangeFair", "CrangeUnfair", "LrangeFair", "LrangeUnfair", "Cintense", "Cpastel", "HwidthDivRainbow", "HwidthDivSingle", "HwidthSeqRainbow", "HwidthSeqSingle", "naming_fun", "naming_fun_args", "naming_colors", "naming_softmax", "angle_convention")
 
 	o = as.list(.C4A)[nms]
 

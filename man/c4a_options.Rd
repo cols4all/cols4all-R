@@ -36,6 +36,7 @@ Get or set global options for c4a. Works similar as the base function \code{opti
    naming_fun_args \tab List of arguments for \code{naming_fun} \cr
    naming_colors \tab Vector of prototype colors for the color names (see examples) \cr
    naming_softmax \tab List of parameters for the softmax function applied to the distance matrix \cr
+   angle_convention \tab Degrees-of-visual-angle <-> pixel conversion used by \code{visual_angle_to_px()} / \code{px_to_visual_angle()}: \code{"szafir"} (default) reproduces Szafir (2018)'s own in-text px-equivalents; \code{"standard"} is the textbook chord formula \cr
 }
 }
 \examples{

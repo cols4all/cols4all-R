@@ -265,23 +265,38 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 											  shiny::br(),
 											  infoBoxUI("infoSimu", "Color blindness simulation"),
 											  plotOverlay("cbfSimu", width = "800px", height = "150px", "aniSimu"))),
+							# "Separability" (infoSimi) + chart type/size/numbers sit once, in the
+							# same row as "Hue lines" -- not repeated per CVD-state row -- so the
+							# four Hue-lines/matrix/example row-groups below stay vertically
+							# aligned across all three columns, and there's no separate
+							# header-only row above column 1 creating whitespace there.
 							shiny::fluidRow(
 								shiny::column(width = 4,
 											  shiny::br(),
 											  shiny::br(),
 											  infoBoxUI("infoHueLines", "Hue lines")),
-
-
-
-					  #### **Hue lines**")),
-								shiny::column(width = 6,
+								shiny::column(width = 8,
 											  shiny::br(),
 											  shiny::br(),
-											  infoBoxUI("infoSimi", "Similarity matrix"))),
-							shiny::fluidRow(shiny::column(width = 4, shiny::markdown("Normal color vision")),
-											shiny::column(width = 3, shiny::radioButtons("cbfScore", NULL, choices = c("Symbols", "Gradient"), inline = TRUE)),
-											shiny::column(width = 3, shiny::checkboxInput("cbfBcAdj", "Background Adjustment", value = FALSE)),
-											shiny::column(width = 2, shiny::radioButtons("cbfType", NULL, choices = c("Map", "Lines"), inline = TRUE))),
+											  infoBoxUI("infoSimi", "Separability"),
+											  shiny::tags$div(style = "margin-top:8px; max-width:220px;",
+											  	shiny::radioButtons("cbfType", NULL, choices = c("Lines", "Points"), inline = TRUE),
+											  	shiny::conditionalPanel(
+											  		condition = "input.cbfType == 'Lines'",
+											  		shiny::sliderInput("cbfLineSize", NULL, min = 0.05, max = 0.2, value = 0.05, step = 0.05, post = "°", ticks = TRUE)
+											  	),
+											  	shiny::conditionalPanel(
+											  		condition = "input.cbfType == 'Points'",
+											  		shiny::sliderInput("cbfPointSize", NULL, min = 0.25, max = 1, value = 0.25, step = 0.25, post = "°", ticks = TRUE)
+											  	),
+											  	shiny::checkboxInput("cbfShowNumbers", "Show percentage numbers", value = FALSE)
+											  ))),
+							# Background Adjustment (bc_adj) is temporarily removed from the UI --
+							# we don't yet have a validated model for it (see palette_prob_bg()'s
+							# lum_adjust caveats). The plumbing (bc_adj param, throughout
+							# plot_matrix()/get_prob_matrix()) is untouched, just hardcoded to
+							# FALSE below, so re-adding the checkbox later is a one-line change.
+							shiny::fluidRow(shiny::column(width = 12, shiny::markdown("Normal color vision"))),
 							shiny::fluidRow(shiny::column(width = 4, plotOverlay("cbfHL", width = "375px", height = "375px", "aniHL")),
 											shiny::column(width = 6, plotOverlay("cbfSimi", width = "500px", height = "375px", "aniSimi", click = "cbfSimi_click")),
 											shiny::column(width = 2, shiny::plotOutput("cbf_ex1", height = "375px", width = "150px"))),
@@ -293,7 +308,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 								shiny::column(width = 6,
 											  shiny::br(),
 											  shiny::br(),
-											  infoBoxUI("infoPSimi", "Perceived similarity matrices"))),
+											  infoBoxUI("infoPSimi", "Separability (perceived)"))),
 								#shiny::column(width = 6, shiny::markdown("<br/><br/>
 					  #### **Distance matrices**"))),
 							shiny::fluidRow(shiny::column(width = 12, shiny::markdown("Deutan (red-green blind)"))),
@@ -1080,6 +1095,19 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 			c4a_plot_confusion_lines(pal, cvd = "tritan", dark = input$dark)
 		})
 
+		# Separate sliders per chart type (cbfLineSize / cbfPointSize), since
+		# the two Szafir (2018) models have different fitted/validated ranges
+		# -- lines 0.05-0.35 deg, points 0.25-2.0 deg (see palette_prob_bg()'s
+		# documentation) -- and aren't evenly spaced, so one slider can't
+		# serve both directly. "Map" is removed for now -- Szafir's models
+		# don't transfer to filled polygons (see the design discussion).
+		cbf_mark = shiny::reactive({
+			if (input$cbfType == "Points") "point" else "line"
+		})
+		cbf_thickness = shiny::reactive({
+			if (input$cbfType == "Points") input$cbfPointSize else input$cbfLineSize
+		})
+
 		output$cbfSimi = shiny::renderPlot({
 			if (!length(tab_vals$pal)) return(NULL)
 
@@ -1087,7 +1115,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 			id1 = tab_vals$idA1
 			id2 = tab_vals$idA2
 
-			c4a_plot_dist_matrix(pal, cvd = "none", id1 = id1, id2 = id2, dark = input$dark, advanced = (input$cbfScore == "Gradient"), bc_adj = input$cbfBcAdj)
+			c4a_plot_dist_matrix(pal, cvd = "none", id1 = id1, id2 = id2, dark = input$dark, show_numbers = input$cbfShowNumbers, bc_adj = FALSE, thickness = cbf_thickness(), mark = cbf_mark())
 		})
 
 		output$cbfPSimi1 = shiny::renderPlot({
@@ -1097,7 +1125,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 			id1 = tab_vals$idA1
 			id2 = tab_vals$idA2
 
-			c4a_plot_dist_matrix(pal, cvd = "deutan", id1 = id1, id2 = id2, dark = input$dark, advanced = (input$cbfScore == "Gradient"), bc_adj = input$cbfBcAdj)
+			c4a_plot_dist_matrix(pal, cvd = "deutan", id1 = id1, id2 = id2, dark = input$dark, show_numbers = input$cbfShowNumbers, bc_adj = FALSE, thickness = cbf_thickness(), mark = cbf_mark())
 		})
 
 		output$cbfPSimi2 = shiny::renderPlot({
@@ -1107,7 +1135,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 			id1 = tab_vals$idA1
 			id2 = tab_vals$idA2
 
-			c4a_plot_dist_matrix(pal, cvd = "protan", id1 = id1, id2 = id2, dark = input$dark, advanced = (input$cbfScore == "Gradient"), bc_adj = input$cbfBcAdj)
+			c4a_plot_dist_matrix(pal, cvd = "protan", id1 = id1, id2 = id2, dark = input$dark, show_numbers = input$cbfShowNumbers, bc_adj = FALSE, thickness = cbf_thickness(), mark = cbf_mark())
 		})
 
 		output$cbfPSimi3 = shiny::renderPlot({
@@ -1117,20 +1145,8 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 			id1 = tab_vals$idA1
 			id2 = tab_vals$idA2
 
-			c4a_plot_dist_matrix(pal, cvd = "tritan", id1 = id1, id2 = id2, dark = input$dark, advanced = (input$cbfScore == "Gradient"), bc_adj = input$cbfBcAdj)
+			c4a_plot_dist_matrix(pal, cvd = "tritan", id1 = id1, id2 = id2, dark = input$dark, show_numbers = input$cbfShowNumbers, bc_adj = FALSE, thickness = cbf_thickness(), mark = cbf_mark())
 		})
-
-		cbf_map = function(cols, cvd) {
-			if (!length(cols)) return(NULL)
-
-			hcl = get_hcl_matrix(cols)
-
-			cols_cvd = sim_cvd(cols, cvd)
-
-			borders = ifelse(mean(hcl[,3]>=50), "#000000", "#FFFFFF")
-
-			c4a_plot_map(col1 = cols_cvd[1], col2 = cols_cvd[2], borders = borders, lwd = 1, crop = TRUE, dark = input$dark)
-		}
 
 		cbf_lines = function(cols, cvd) {
 			if (!length(cols)) return(NULL)
@@ -1138,7 +1154,24 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 			hcl = get_hcl_matrix(cols)
 
 			cols_cvd = sim_cvd(cols, cvd)
-			c4a_plot_lines(cols = c(cols_cvd[1], col2 = cols_cvd[2]), lwd = 3, asp = .9, dark = input$dark)
+			# visual_angle_to_px()'s default viewing conditions (30in, 96dpi)
+			# match Szafir's own assumptions, and base R's lwd is itself
+			# conventionally ~1/96 inch -- so at those defaults, px and lwd
+			# units line up directly. A rule of thumb, not a calibrated one.
+			lwd = visual_angle_to_px(cbf_thickness())
+			c4a_plot_lines(cols = c(cols_cvd[1], col2 = cols_cvd[2]), lwd = lwd, asp = .9, dark = input$dark)
+		}
+
+		cbf_points = function(cols, cvd) {
+			if (!length(cols)) return(NULL)
+
+			cols_cvd = sim_cvd(cols, cvd)
+			# Point diameter -> grid "char" size is just a rough visual proxy
+			# (same px rule of thumb as cbf_lines()'s lwd, rescaled), unlike
+			# the underlying probability, which uses palette_prob_bg()'s own
+			# validated Szafir point-mark model (mark = "point").
+			size = visual_angle_to_px(cbf_thickness()) / 5
+			c4a_plot_scatter(cols = cols_cvd, size = size, lwd = 0, dark = input$dark)
 		}
 
 
