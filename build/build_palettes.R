@@ -19,22 +19,31 @@ library(rcolors)
 # required for building scripts
 library(volcano3D)
 library(fitdistrplus)
+library(ltc)
 
 sessioninfo::session_info(pkgs = "attached")
-# colorblindcheck * 1.0.2   2023-05-13 [1] CRAN (R 4.4.0)
-# colorspace      * 2.1-1   2024-07-26 [1] CRAN (R 4.4.0)
-# VP cols4all        * 0.7-2   2024-03-12 [?] CRAN (R 4.4.0) (on disk 0.7.1)
-# ggthemes        * 5.1.0   2024-02-10 [1] CRAN (R 4.4.0)
-# khroma          * 1.14.0  2024-08-26 [1] CRAN (R 4.4.1)
-# MetBrewer       * 0.2.0   2022-03-21 [1] CRAN (R 4.4.0)
-# pals            * 1.9     2024-07-16 [1] CRAN (R 4.4.0)
-# Polychrome      * 1.5.1   2022-05-03 [1] CRAN (R 4.4.0)
-# rcartocolor     * 2.1.1   2023-05-13 [1] CRAN (R 4.4.0)
-# RColorBrewer    * 1.1-3   2022-04-03 [1] CRAN (R 4.4.0)
-# reticulate      * 1.38.0  2024-06-19 [1] CRAN (R 4.4.0)
-# shiny           * 1.8.1.1 2024-04-02 [1] CRAN (R 4.4.0)
-# treemap         * 2.4-4   2023-05-25 [1] CRAN (R 4.4.0)
-# viridisLite     * 0.4.2   2023-05-02 [1] CRAN (R 4.4.0)
+
+# colorblindcheck * 1.0.4   2025-10-09 [1] CRAN (R 4.6.0)
+# colorspace      * 2.1-2   2025-09-22 [1] CRAN (R 4.6.0)
+# devtools        * 2.5.2   2026-04-30 [1] CRAN (R 4.6.0)
+# fitdistrplus    * 1.2-6   2026-01-24 [1] CRAN (R 4.6.0)
+# ggthemes        * 5.2.0   2025-11-30 [1] CRAN (R 4.6.0)
+# khroma          * 1.17.0  2025-09-29 [1] CRAN (R 4.6.0)
+# ltc             * 0.4.0   2026-07-19 [1] CRAN (R 4.6.1)
+# MASS            * 7.3-65  2025-02-28 [1] CRAN (R 4.6.1)
+# MetBrewer       * 0.2.0   2022-03-21 [1] CRAN (R 4.6.0)
+# pals            * 1.10    2025-03-07 [1] CRAN (R 4.6.0)
+# Polychrome      * 1.6.1   2026-07-06 [1] CRAN (R 4.6.1)
+# rcartocolor     * 2.1.2   2025-07-23 [1] CRAN (R 4.6.0)
+# RColorBrewer    * 1.1-3   2022-04-03 [1] CRAN (R 4.6.0)
+# rcolors         * 0.1.0   2021-04-23 [1] CRAN (R 4.6.0)
+# reticulate      * 1.46.0  2026-04-09 [1] CRAN (R 4.6.0)
+# rvest           * 1.0.5   2025-08-29 [1] CRAN (R 4.6.0)
+# survival        * 3.8-6   2026-01-16 [1] CRAN (R 4.6.1)
+# usethis         * 3.2.1   2025-09-06 [1] CRAN (R 4.6.0)
+# viridisLite     * 0.4.3   2026-02-04 [1] CRAN (R 4.6.0)
+# volcano3D       * 2.0.11  2026-01-14 [1] CRAN (R 4.6.0)
+# xml2            * 1.5.2   2026-01-17 [1] CRAN (R 4.6.0)
 
 
 #source("build/build_naming_model.R")
@@ -70,7 +79,15 @@ local({
 	spals = lapply(seq, function(s) hcl.colors(11, s))
 	names(spals) = seq
 
-	dpals = lapply(div, function(s) hcl.colors(11, s))
+	# n=11 (not 13) for backwards compatibility. grDevices::hcl.colors()
+	# returns an NA / errors at n=11's midpoint for every name in `div` --
+	# same upstream bug as pg above -- so use colorspace::diverging_hcl()
+	# instead, which is byte-identical to hcl.colors() everywhere the bug
+	# isn't hit (verified for all of `div` at even n) and gets the midpoint
+	# right where hcl.colors() doesn't.
+	dpals = lapply(div, function(s) {
+		colorspace::diverging_hcl(11, s)
+	})
 	names(dpals) = div
 
 	#names(dpals)[1] = "Blue-Red 1" #to prevent conflict with reversed "Red-Blue"
@@ -775,7 +792,15 @@ local({
 local({
 	bu2 = c4a("-hcl.blues3", n = 5, range = c(0.3, 0.8))
 	yl_rd = c4a("-hcl.red_yellow", n = 5, range = c(0.3, 0.8))
-	pg = hcl.colors(11, "Purple-Green")
+	# grDevices::hcl.colors(11, "Purple-Green") returns NA for the middle
+	# color -- a known upstream bug (still present in R 4.6.1; same root
+	# cause as https://github.com/EmilHvitfeldt/paletteer/issues/166, e.g.
+	# hcl.colors(11, "Blue-Red 2") errors outright) in the odd-n midpoint of
+	# the C-level diverging-ramp code. colorspace::diverging_hcl() is the
+	# original R-level implementation grDevices ported from; it's byte-
+	# identical to hcl.colors() everywhere that isn't hitting the bug, but
+	# still gets the midpoint right.
+	pg = colorspace::diverging_hcl(11, "Purple-Green")
 	bu = hcl.colors(9, "Blues 3")[7:3]
 	gn = hcl.colors(9, "Greens 3")[7:3]
 	pu = hcl.colors(9, "Purples 3")[7:3]
@@ -922,40 +947,45 @@ local({
 
 local({
 
-
-	# scrape (date website 2024-07-12, scraped on 2024-09-25)
-	url <-"https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-report-themes"
-	url2 = "https://learn.microsoft.com/en-us/power-bi/create-reports"
-
-	webpage <- session(url)
-	link.titles <- webpage %>% html_nodes("img")
-	img.url <- link.titles[7:30] %>% html_attr("src")
-
-	fn = basename(img.url)
-
-	td = "build/bowerbi"
-	unlink(td, force = TRUE, recursive = TRUE)
-	dir.create(td)
-
-	fls = mapply(function(a, b) {
-		b2 = file.path(td, b)
-		download.file(paste(url2, a, sep = "/"), destfile = b2)
-		b2
-	}, img.url, fn)
-
-	pals = lapply(fls, function(f) {
-		p = png::readPNG(f)
-		rgb_codes = p[12, seq(15,230, length.out = 8), 1:3]
-		do.call(rgb, unname(as.list(as.data.frame(rgb_codes))))
-	})
-
-	# manual
-	nms = fn
-	nms[1:19] = substr(nms[1:19], 28, nchar(nms[1:19]) - 4)
-	nms[20:24] = paste0("accessible_", substr(nms[20:24], 18, nchar(nms[20:24]) - 4))
-	nms = sub("-", "_", nms, fixed = TRUE)
-
-	names(pals) = nms
+	# Originally scraped from https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-report-themes
+	# (page as of 2024-07-12, scraped 2024-09-25). That page has since been
+	# restructured -- it now shows only 5 of these 24 themes (Bloom,
+	# Divergent, Frontier, Innovate, Tidal) as swatch images, with no
+	# machine-readable seq/div/cat distinction, and no images at all for the
+	# other 19 (including all 5 "Accessible" themes, which didn't exist yet
+	# in 2024). No R/Python package or official Microsoft JSON source has
+	# these either (checked 2026-08). So instead of scraping, these are the
+	# exact hex values from the 2024 scrape (still present in the shipped
+	# sysdata.rda) -- re-verified 2026-08-28 by re-scraping the 5 themes
+	# still shown on the live page: byte-identical to these, i.e. Microsoft
+	# hasn't changed them since. Update this list by hand if Microsoft adds
+	# or changes built-in/accessible themes.
+	pals = list(
+		default              = c("#118DFF", "#12239E", "#E66C37", "#6B007B", "#E044A7", "#744EC2", "#D9B300", "#D64550"),
+		highrise             = c("#499195", "#00ACFC", "#C4B07B", "#F18F49", "#326633", "#F1C716", "#D8D7BF", "#224624"),
+		executive            = c("#3257A8", "#37A794", "#8B3D88", "#DE657A", "#6B91C9", "#F5C869", "#77C4A8", "#DFA5CF"),
+		frontier             = c("#426871", "#D2B04C", "#A3623A", "#C25A3D", "#C39B6A", "#016E51", "#BEBBB7", "#FFA500"),
+		innovative           = c("#70B0E0", "#FCB714", "#2878BD", "#0EB194", "#108372", "#AF916D", "#C4B07B", "#F15628"),
+		bloom                = c("#8250C4", "#5ECBC8", "#438FFF", "#FF977E", "#EB5757", "#5B2071", "#EC5A96", "#A43B76"),
+		tidal                = c("#094782", "#0B72D7", "#098BF5", "#54B5FB", "#71C0A7", "#57B956", "#478F48", "#326633"),
+		temperature          = c("#262A76", "#234990", "#2F8AC3", "#26B0D2", "#FFC1CB", "#EB5559", "#AD3232", "#8E1F20"),
+		solar                = c("#FFAC00", "#E87200", "#E13102", "#D3004C", "#EF008C", "#9B0065", "#7D0033", "#5C0001"),
+		divergent            = c("#B73A3A", "#EC5656", "#F28A90", "#F8BCBD", "#99E472", "#17C269", "#0AAC00", "#026645"),
+		storm                = c("#8BC7F7", "#46B3F3", "#009FEF", "#008CEE", "#0076EE", "#0050EB", "#0641C8", "#0B31A5"),
+		classic              = c("#01B8AA", "#374649", "#FD625E", "#F2C80F", "#5F6B6D", "#8AD4EB", "#FE9666", "#A66999"),
+		city_park            = c("#73B761", "#4A588A", "#ECC846", "#CD4C46", "#71AFE2", "#8D6FD1", "#EE9E64", "#95DABB"),
+		classroom            = c("#4A8DDC", "#4C5D8A", "#F3C911", "#DC5B57", "#33AE81", "#95C8F0", "#DD915F", "#9A64A0"),
+		colorblind_safe      = c("#074650", "#009292", "#FE6DB6", "#FEB5DA", "#480091", "#B66DFF", "#B5DAFE", "#6DB6FF"),
+		electric             = c("#118DFF", "#750985", "#C83D95", "#FF985E", "#1DD5EE", "#42F7C0", "#3049AD", "#F64F5C"),
+		high_contrast        = c("#107C10", "#002050", "#A80000", "#5C2D91", "#004B50", "#0078D7", "#D83B01", "#B4009E"),
+		sunset               = c("#B6B0FF", "#3049AD", "#FF994E", "#C83D95", "#FFBBED", "#42F9F9", "#00B2D9", "#FFD86C"),
+		twilight             = c("#F17925", "#004753", "#CCAA14", "#4B4C4E", "#D82C20", "#A3D0D4", "#536F18", "#46ABB0"),
+		accessible_default   = c("#118DFF", "#12239E", "#E66C37", "#6B007B", "#E645AB", "#4A2D75", "#1AAB40", "#10433F"),
+		accessible_city_park = c("#59A33A", "#2D386D", "#AD8F21", "#7B1C25", "#5C97D2", "#661F89", "#E56E1D", "#14482C"),
+		accessible_tidal     = c("#0F3D6E", "#1F84FF", "#19423F", "#59A472", "#0F3A69", "#0E94FF", "#0B2623", "#59A472"),
+		accessible_neutral   = c("#6B797C", "#362B2B", "#B08D72", "#40484A", "#86989C", "#5B3D35", "#928F8B", "#242828"),
+		accessible_orchid    = c("#364B59", "#C480A7", "#663466", "#6E98B5", "#67002E", "#5D8099", "#3F213F", "#EC64A9")
+	)
 
 	ts = c(rep("cat", 6), rep("div", 4), "seq", rep("cat", 13))
 
@@ -1026,50 +1056,38 @@ if (FALSE) {
 
 # bivario
 local({
-	library(reticulate)
+	# Not reticulate: reticulate binds one Python interpreter per R session,
+	# so if anything earlier in this script already initialized a different
+	# Python, use_python() here fails ("another version of Python has
+	# already been initialized") and the only fix would be restarting R --
+	# losing the .z/.s state this script builds up. Shelling out to the
+	# venv's python3.11 directly sidesteps that: it's an independent
+	# subprocess, decoupled from whatever reticulate has already bound to.
+	# See build/bivario_export.py for the Python side. Make sure to point
+	# to your venv (created via `python3.11 -m venv ~/venv-bivario` +
+	# `pip install bivario`).
+	json_out = tempfile(fileext = ".json")
+	res = system2(path.expand("~/venv-bivario/bin/python3.11"),
+				  args = c(shQuote(normalizePath("build/bivario_export.py")), shQuote(json_out)))
+	if (res != 0) stop("bivario_export.py failed", call. = FALSE)
 
+	pals_flat = jsonlite::fromJSON(json_out)
+	unlink(json_out)
 
-	# Make sure to point to your venv
-	use_python("~/venv-bivario/bin/python3.11", required = TRUE)
-
-	bivario <- import("bivario")
-	np <- import("numpy")
-
-	bivariate_color_matrix <- function(cmap_name = "coral_ocean", n = 10, m = 10) {
-		cmap <- bivario$NamedBivariateColourmap(cmap_name)
-
-		# Generate sequences
-		values_a <- seq(0, 1, length.out = n)
-		values_b <- seq(0, 1, length.out = m)
-
-		# Make all combinations (grid)
-		grid <- expand.grid(a = values_a, b = values_b)
-
-		# Call cmap on vectors of all combinations
-		rgb_array <- cmap(values_a = grid$a, values_b = grid$b)
-
-		# Convert Python array to R and scale to 0-255
-		rgb_array <- round(py_to_r(rgb_array) * 255)
-
-		# Convert to hex
-		hex_colors <- sprintf("#%02X%02X%02X", rgb_array[,1], rgb_array[,2], rgb_array[,3])
-
-		# Reshape into n x m matrix
-		color_matrix <- matrix(hex_colors, nrow = n, ncol = m, byrow = TRUE)
-
-		return(color_matrix)
-	}
-
-	nms = names(bivario$palettes$BIVARIATE_CORNER_PALETTES)
-
-	pals = lapply(nms, function(nm) {
-		bivariate_color_matrix(nm, 7, 7)
+	# matrix(..., byrow = TRUE) on the flat (a-fastest, b-slowest) vector
+	# reproduces exactly what the original reticulate-based code passed to
+	# c4a_data() -- c4a_data()'s create_biv_palette() does its own transpose
+	# internally, so don't pre-transpose here (verified byte-identical to
+	# the published bivario.* palettes with this exact reshape, and NOT
+	# identical with an extra t() -- that double-transposes).
+	pals = lapply(pals_flat, function(hex_colors) {
+		matrix(hex_colors, nrow = 7, ncol = 7, byrow = TRUE)
 	})
-	names(pals) = nms
+	names(pals) = names(pals_flat)
 
 	cd = c4a_data(pals, types = "bivs", series = "bivario")
 	c4a_load(cd)
-	c4a_gui()
+	#c4a_gui()
 })
 
 .z = get("z", .C4A)

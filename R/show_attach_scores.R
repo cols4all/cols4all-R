@@ -1,4 +1,4 @@
-show_attach_scores = function(z) {
+show_attach_scores = function(z, include_tritan = TRUE) {
 	type = z$type[1]
 	if (!all(z$type == type)) stop("mixed palette types not allowed")
 
@@ -7,7 +7,17 @@ show_attach_scores = function(z) {
 
 	s = .C4A$s
 
-	s[,.C4A$score_x100,] = s[,.C4A$score_x100,] / 100
+	# intersect(), not score_x100 directly: a sysdata.rda built before the
+	# _dp (deutan+protan-only) columns existed won't have them in `s` yet,
+	# and this rescaling must not break existing (include_tritan = TRUE)
+	# behavior while that rebuild is pending.
+	sx100 = intersect(.C4A$score_x100, dimnames(s)[[2]])
+	s[,sx100,] = s[,sx100,] / 100
+
+	if (!include_tritan && !"min_dist_dp" %in% dimnames(s)[[2]]) {
+		warning("include_tritan = FALSE requires sysdata.rda to be rebuilt (missing '_dp' score columns); falling back to include_tritan = TRUE", call. = FALSE)
+		include_tritan = TRUE
+	}
 
 
 	s2 = s[match(z$fullname, dimnames(s)[[1]]), , , drop = FALSE]
@@ -27,8 +37,34 @@ show_attach_scores = function(z) {
 
 	z2 = cbind(z, as.data.frame(s3))
 
-	z2$cbfriendly = get_friendlyness(z2)
+	z2$cbfriendly = get_friendlyness(z2, include_tritan = include_tritan)
 	z2$cbfriendly[is.na(z2$cbfriendly)] = 0
+
+	# Per-CVD badges (cat only, for now -- see check_cat_pal()'s
+	# min_dist_none/_deutan/_protan/_tritan): unlike cbfriendly above, no
+	# worst-case aggregation across CVDs, one classification per CVD state,
+	# same CBF_th$cat/CBVF_th$cat/CBU_th$cat thresholds applied to each.
+	# NA (not 0) for non-cat types, where these raw columns don't exist.
+	classify_cat = function(x) ifelse(x >= .C4A$CBVF_th$cat["min_dist"], 2,
+								ifelse(x >= .C4A$CBF_th$cat["min_dist"], 1,
+								ifelse(x <= .C4A$CBU_th$cat["min_dist"], -1, 0)))
+	# NA (rather than erroring on a length-0 assignment), not classify_cat():
+	# a sysdata.rda predating these columns won't have min_dist_none/etc. in
+	# .C4A$s at all yet, same staleness gap as the _dp columns above.
+	z2$cbf_none = if (is.null(z2$min_dist_none)) NA else classify_cat(z2$min_dist_none)
+	z2$cbf_deutan = if (is.null(z2$min_dist_deutan)) NA else classify_cat(z2$min_dist_deutan)
+	z2$cbf_protan = if (is.null(z2$min_dist_protan)) NA else classify_cat(z2$min_dist_protan)
+	z2$cbf_tritan = if (is.null(z2$min_dist_tritan)) NA else classify_cat(z2$min_dist_tritan)
+
+	# Raw "overall" numbers (cat/bivc only) for the "Show scores" table --
+	# distinct from cbfriendly above (a classification, gated by
+	# include_tritan) and from get_friendlyness()'s internal aggregate
+	# (used only for sort/filter): these are both variants shown side by
+	# side, always, regardless of include_tritan.
+	if (all(c("min_dist_deutan", "min_dist_protan", "min_dist_tritan") %in% names(z2))) {
+		z2$min_dist_overall = pmin(z2$min_dist_deutan, z2$min_dist_protan, z2$min_dist_tritan)
+		z2$min_dist_overall_dp = pmin(z2$min_dist_deutan, z2$min_dist_protan)
+	}
 	#ßz2$iscbf = (z2$cbfriendly == 1)
 	#a = t(mapply(analyse_hcl, z2$palette, z2$type))
 	#z2 = cbind(z2, a)
@@ -98,7 +134,32 @@ get_spread = function(Hwidth, n) {
 
 
 
-get_friendlyness = function(zn) {
+get_friendlyness = function(zn, include_tritan = TRUE) {
+	if (!include_tritan) {
+		# swap in the deutan+protan-only scores (tritan is ~400x rarer than
+		# deutan+protan combined, ~1 in 10,000 vs ~4% of the population) --
+		# the branching logic below is otherwise unchanged. Harmless no-op
+		# for cat/bivc rows here (their min_dist_dp is NA/absent, see below).
+		for (col in c("min_dist", "min_step", "inter_wing_dist", "tri_ineq")) {
+			dp_col = paste0(col, "_dp")
+			if (dp_col %in% names(zn)) zn[[col]] = zn[[dp_col]]
+		}
+	}
+
+	# cat/bivc no longer store min_dist/min_dist_dp (see check_cat_pal()) --
+	# they're fully represented by the 4 raw per-cvd columns instead, so
+	# derive the worst-case aggregate here, overwriting whatever the swap
+	# above left in zn$min_dist for these rows (NA, since they never had a
+	# min_dist_dp to swap in). Other types are untouched: they still don't
+	# have this per-cvd breakdown, so they keep using the swap above.
+	is_cat_like = zn$type %in% c("cat", "bivc")
+	if (any(is_cat_like) && all(c("min_dist_deutan", "min_dist_protan", "min_dist_tritan") %in% names(zn))) {
+		agg = pmin(zn$min_dist_deutan, zn$min_dist_protan,
+				   if (include_tritan) zn$min_dist_tritan else Inf)
+		if (is.null(zn$min_dist)) zn$min_dist = NA_real_
+		zn$min_dist[is_cat_like] = agg[is_cat_like]
+	}
+
 	with(zn, {
 		ifelse(type == "cat", (min_dist / 1000) + ifelse(min_dist >= .C4A$CBVF_th$cat["min_dist"], 2, ifelse(min_dist >= .C4A$CBF_th$cat["min_dist"], 1,
 							  ifelse(min_dist <= .C4A$CBU_th$cat["min_dist"], -1, 0))),

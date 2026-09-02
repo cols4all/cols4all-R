@@ -57,28 +57,60 @@ do_cellspec = function(lst) {
 	with(.C4A,{
 		defaults = c(cat = "cols4all.line7", seq = "kovesi.blue", div = "cols4all.pu_gn_div", cyc = "scico.roma_o", bivs = "cols4all.bu_br_bivs", bivc = "met_monet", bivd = "cols4all.pu_gn_bivd", bivg = "cols4all.br_bivg")
 
-		score_x100 = c("min_dist", "min_step", "max_step", "inter_wing_dist", "tri_ineq", "CRmin", "CRwt", "CRbk", "Blues")
+		# min_dist_none/_deutan/_protan/_tritan NOT included here: unlike
+		# the DeltaE-based scores below (where *100-then-/100 preserves 2
+		# decimal digits through integer storage), get_prob_matrix() already
+		# returns a 0-100 percentage -- check_cat_pal() stores it directly
+		# (no *100), so it needs no /100 recovery either. Rescaling it here
+		# would double-divide it into a decimal fraction (e.g. 0.45 instead
+		# of the whole percentage 45).
+		score_x100 = c("min_dist", "min_step", "max_step", "inter_wing_dist", "tri_ineq", "CRmin", "CRwt", "CRbk", "Blues",
+					   "min_dist_dp", "min_step_dp", "max_step_dp", "inter_wing_dist_dp", "tri_ineq_dp")
+
+		# "_dp" (deutan+protan) variants: tritan is ~400x rarer than deutan+
+		# protan combined (~1 in 10,000 vs ~4% of the population), so the
+		# worst-case min() across all 3 CVDs (the non-_dp scores) is opt-out
+		# rather than the only option -- see get_friendlyness()'s
+		# include_tritan arg (used for the "cbfriendly" sort/filter, default
+		# TRUE i.e. unchanged historical behavior). Same thresholds are
+		# reused for both: dropping tritan can only raise a palette's score
+		# (never lower it), never requires a separate cutoff.
+		#
+		# "_none"/"_deutan"/"_protan"/"_tritan" (cat only, for now): the raw
+		# per-CVD value with no worst-case aggregation at all, one column per
+		# CVD state, shown as 4 separate N/D/P/T badges in the GUI table
+		# instead of collapsing to a single number -- see get_friendlyness()
+		# is not involved here, that's still the single aggregate; these
+		# feed a separate per-cvd classification in show_attach_scores().
+		# Same CBF_th$cat/CBVF_th$cat/CBU_th$cat thresholds reused for all 4.
+
+		# cat/bivc are scored via get_prob_matrix() (Szafir 2018, % viewers who
+		# can discriminate a 0.05deg-thick line -- check_cat_pal()), so their
+		# min_dist thresholds below are on a 0-100 percentage scale. All other
+		# types (seq/cyc/div/bivs/bivd/bivg) still use get_dist_matrix() (the
+		# old min-lum DeltaE metric) -- their thresholds are unchanged /
+		# original DeltaE-scale values.
 
 		#color-blind-friendly thresholds
-		CBF_th = list(cat = c(min_dist = 10),
+		CBF_th = list(cat = c(min_dist = 90),
 					  seq = c(min_dist = 5, tri_ineq = 2),
 					  cyc = c(min_dist = 5, tri_ineq = 2),
 					  div = c(inter_wing_dist = 10, min_step = 5, tri_ineq = 2),
 					  bivs = c(inter_wing_dist = 7, min_step = 3),
-					  bivc = c(min_dist = 10),
+					  bivc = c(min_dist = 90),
 					  bivd = c(inter_wing_dist = 7, min_step = 3),
 					  bivg = c(inter_wing_dist = 7, min_step = 3))
 
 		#color-blind-very-friendly thresholds
-		CBVF_th = list(cat = c(min_dist = 15))
+		CBVF_th = list(cat = c(min_dist = 95))
 
 		# unfriendly (rolling eyes)
-		CBU_th = list(cat = c(min_dist = 2),
+		CBU_th = list(cat = c(min_dist = 50),
 					  seq = c(min_dist = 2, tri_ineq = 0),
 					  cyc = c(min_dist = 2, tri_ineq = 0),
 					  div = c(inter_wing_dist = 4, min_step = 2, tri_ineq = 0),
 					  bivs = c(inter_wing_dist = 3, min_step = 2),
-					  bivc = c(min_dist = 2),
+					  bivc = c(min_dist = 50),
 					  bivd = c(inter_wing_dist = 3, min_step = 2),
 					  bivg = c(inter_wing_dist = 3, min_step = 2))
 
@@ -116,7 +148,16 @@ do_cellspec = function(lst) {
 			   "min_step",
 			   "max_step",
 			   "inter_wing_dist",
-			   "tri_ineq")
+			   "tri_ineq",
+			   "min_dist_dp",
+			   "min_step_dp",
+			   "max_step_dp",
+			   "inter_wing_dist_dp",
+			   "tri_ineq_dp",
+			   "min_dist_none",
+			   "min_dist_deutan",
+			   "min_dist_protan",
+			   "min_dist_tritan")
 
 		types = c("Categorical" = "cat",
 				  "Sequential" = "seq",
@@ -148,12 +189,19 @@ do_cellspec = function(lst) {
 		ndef = c(cat = Inf, seq = 7, cyc = 9, div = 9, bivc = Inf, bivs = 3, bivd = 3, bivg  = 3) # Inf meaning maximum available colors
 		mdef = c(cat = 1, seq = 1, cyc = 1, div = 1, bivc = 3, bivs = NA, bivd = 3, bivg  = 3) # NA meaning same as ndef
 
-		CB_ranges = list(cat = list(min_dist = c(0, 20)),
+		# cat/bivc display range is on the get_prob_matrix() (% discriminable)
+		# scale; all other types are back on the DeltaE scale (original ranges).
+		# cat/bivc: min_dist isn't stored anymore (see check_cat_pal()) -- the
+		# 4 raw per-CVD values plus both "overall" aggregate variants are
+		# shown instead (all computed in show_attach_scores()).
+		cb_ranges_cat_like = list(min_dist_none = c(0, 100), min_dist_deutan = c(0, 100), min_dist_protan = c(0, 100),
+								  min_dist_tritan = c(0, 100), min_dist_overall = c(0, 100), min_dist_overall_dp = c(0, 100))
+		CB_ranges = list(cat = cb_ranges_cat_like,
 						 seq = list(min_dist = c(0, 20), tri_ineq = c(-50, 50)),
 						 cyc = list(min_dist = c(0, 20), tri_ineq = c(-50, 50)),
 						 div = list(inter_wing_dist = c(0, 20), min_step = c(0, 20), tri_ineq = c(-50, 50)),
 						 bivs = list(inter_wing_dist = c(0, 20), min_step = c(0, 20)),
-						 bivc = list(min_dist = c(0, 20)),
+						 bivc = cb_ranges_cat_like,
 						 bivd = list(inter_wing_dist = c(0, 20), min_step = c(0, 20)),
 						 bivg = list(inter_wing_dist = c(0, 20), min_step = c(0, 20)))
 
@@ -169,10 +217,22 @@ do_cellspec = function(lst) {
 		# for score file
 		hcl = c("Cmax", "H", "HL", "HR", "Lmid", "Hwidth", "HwidthL", "HwidthR", "Lrange", "Crange", "fairness", "CRmin", "CRwt", "CRbk")
 
-		# for table (with derived variables)
-		hcl2 = c("Cmax", "H", "HL", "HR", "Lmid", "Hwidth", "Hspread", "HwidthL", "HwidthR", "Lrange", "Crange", "fairness", "CRmin", "CRwt", "CRbk")
+		# for table (with derived variables) -- grouped by theme (Hue/Chroma/
+		# Luminance/Contrast Ratio), not the original arbitrary order, so
+		# plot_table() can draw one shared column header per contiguous
+		# group ("fairness" doesn't belong to any of the 4 named groups, so
+		# it's moved to the end rather than interrupting one of them). Just
+		# display order -- .C4A$hcl (no "2", used for the score array schema
+		# in series_add_get_scores.R / c4a_data.R) is untouched, unaffected.
+		hcl2 = c("H", "HL", "HR", "Hwidth", "Hspread", "HwidthL", "HwidthR",
+				 "Cmax", "Crange",
+				 "Lmid", "Lrange",
+				 "CRmin", "CRwt", "CRbk",
+				 "fairness")
 
-		sortRev = c("cbfriendly", "harmonyRank", "fairness", "Cmax", "min_dist", "tri_ineq", "nameability", "Lmid", "Hwidth", "Hspread", "HwidthL", "HwidthR", "nmax", "CRwt", "CRbk", "Blues")
+		sortRev = c("cbfriendly", "harmonyRank", "fairness", "Cmax", "min_dist", "tri_ineq", "min_dist_dp", "tri_ineq_dp", "nameability", "Lmid", "Hwidth", "Hspread", "HwidthL", "HwidthR", "nmax", "CRwt", "CRbk", "Blues",
+					  "cbf_none", "cbf_deutan", "cbf_protan", "cbf_tritan",
+					  "min_dist_none", "min_dist_deutan", "min_dist_protan", "min_dist_tritan", "min_dist_overall", "min_dist_overall_dp")
 
 		# naming_fun = "naming_dist_centroid"
 		# naming_colors = c(Green = "#859F68",
@@ -198,11 +258,22 @@ do_cellspec = function(lst) {
 		naming_softmax = list(a = 8, th = .1)
 
 		labels = c(min_dist = "Minimum distance",
+				   min_dist_none = "Separability (normal)",
+				   min_dist_deutan = "Separability (deutan)",
+				   min_dist_protan = "Separability (protan)",
+				   min_dist_tritan = "Separability (tritan)",
+				   min_dist_overall = "Separability (overall, incl. tritan)",
+				   min_dist_overall_dp = "Separability (overall, excl. tritan)",
 				   nameability = "Nameability",
 				   min_step = "Minimum step",
 				   max_step = "Maximum step",
 				   inter_wing_dist = "Inter-wing-distance",
 				   tri_ineq = "Triangle inequality",
+				   min_dist_dp = "Minimum distance (excl. tritan)",
+				   min_step_dp = "Minimum step (excl. tritan)",
+				   max_step_dp = "Maximum step (excl. tritan)",
+				   inter_wing_dist_dp = "Inter-wing-distance (excl. tritan)",
+				   tri_ineq_dp = "Triangle inequality (excl. tritan)",
 				   Crel = "Chroma (rel) max",
 				   Cmax = "Chroma max",
 				   H = "Hue middle",
@@ -220,6 +291,10 @@ do_cellspec = function(lst) {
 				   CRwt = "Contrast-Ratio white",
 				   CRbk = "Contrast-Ratio black",
 				   cbfriendly = "Colorblind-friendly",
+				   cbf_none = "Separability (normal vision)",
+				   cbf_deutan = "Separability (deutan)",
+				   cbf_protan = "Separability (protan)",
+				   cbf_tritan = "Separability (tritan)",
 				   chroma = "Vivid",
 				   fair = "Fair",
 				   nameable = "Naming",
@@ -234,16 +309,48 @@ do_cellspec = function(lst) {
 
 		th = list(series = list("Series", tooltip = "Palette series. See last column for references"),
 				  name = list("Name", tooltip = "Palette name"),
-				  cbfriendly = list("Colorblind-friendly", tooltip = "Is the palette suitable for colorblind people?"),
+				  cbfriendly = list("CBF", tooltip = "Colorblind-friendly: is the palette suitable for colorblind people?"),
+				  cbf_none = list("N", tooltip = "Normal color vision: baseline distinctness (not itself a colorblindness measure)"),
+				  cbf_deutan = list("D", tooltip = "Deutan (red-green color blind, ~5% of men, ~0.4% of women)"),
+				  cbf_protan = list("P", tooltip = "Protan (also red-green color blind, ~1% of men)"),
+				  cbf_tritan = list("T", tooltip = "Tritan (blue-yellow color blind, ~1 in 10,000 people -- far rarer than deutan/protan)"),
+				  # "Show scores" raw-number counterparts of cbf_none/etc above
+				  # (badges vs. the underlying numbers) -- same short labels,
+				  # since the group header (see plot_table()) makes clear
+				  # which block a given "N"/"D"/"P"/"T" belongs to.
+				  min_dist_none = list("N", tooltip = "Normal color vision: baseline separability (%), not itself a colorblindness measure"),
+				  min_dist_deutan = list("D", tooltip = "Deutan (red-green color blind, ~5% of men, ~0.4% of women): separability (%)"),
+				  min_dist_protan = list("P", tooltip = "Protan (also red-green color blind, ~1% of men): separability (%)"),
+				  min_dist_tritan = list("T", tooltip = "Tritan (blue-yellow color blind, ~1 in 10,000 people -- far rarer than deutan/protan): separability (%)"),
+				  min_dist_overall = list("All", tooltip = "Overall separability (%): worst case across deutan, protan, and tritan"),
+				  min_dist_overall_dp = list("All\n(-T)", tooltip = "Overall separability (%) excluding tritan: worst case across deutan and protan only"),
 				  chroma = list("Vivid", tooltip = "Are there any vivid (saturated) colors?"),
 				  nmax = list("Max number", tooltip = "Maximum number of colors"),
 				  fair = list("Fair", tooltip = "Do colors stand out about equally?"),
-				  contrastWT = list("Contrast\nwt", tooltip = "Contrast with white (wt), black (bk), and between the colors (equiluminance)."),
-				  contrastBK = list("bk", tooltip = ""),
+				  # Short labels below (no leading "Contrast"/"Hue"/"Chroma"/
+				  # "Luminance") because plot_table() draws a shared group
+				  # header naming the theme once -- repeating it in every
+				  # individual column is what was causing multi-line wrap.
+				  contrastWT = list("wt", tooltip = "Contrast ratio with white background"),
+				  contrastBK = list("bk", tooltip = "Contrast ratio with black background"),
 				  equiluminance = list("eq.", tooltip = "If colors are equiluminant (i.e. very low contrast) visual illusions may appear"),
+				  CRmin = list("min", tooltip = "Contrast ratio minimum: the closest (least contrasting) pair of colors in the palette"),
+				  CRwt = list("wt", tooltip = "Contrast ratio with white background"),
+				  CRbk = list("bk", tooltip = "Contrast ratio with black background"),
 				  nameable = list("Naming", tooltip = "Are the colors are easy to name? If so, they are also easy to remember (in development)"),
 				  float = list("3D Blues", tooltip = "Is there a pure blue color that may cause a 3D illusion?"),
-				  hues = list("Hues", tooltip = "How many different hues are used?"),
+				  hues = list("Pattern", tooltip = "Are hues spread across the spectrum (rainbow), a few hues, or a single hue?"),
+				  H = list("Mid", tooltip = "Hue middle"),
+				  HL = list("Mid L", tooltip = "Hue middle, left wing"),
+				  HR = list("Mid R", tooltip = "Hue middle, right wing"),
+				  Hwidth = list("Width", tooltip = "Hue width"),
+				  Hspread = list("Spread", tooltip = "Hue spread"),
+				  HwidthL = list("Width L", tooltip = "Hue width, left wing"),
+				  HwidthR = list("Width R", tooltip = "Hue width, right wing"),
+				  Cmax = list("Max", tooltip = "Chroma maximum"),
+				  Crange = list("Range", tooltip = "Chroma range"),
+				  Lmid = list("Mid", tooltip = "Luminance mid"),
+				  Lrange = list("Range", tooltip = "Luminance range"),
 				  references = list("References", tooltip = "Click to copy the colors and references"))
 
 		tc = list(cbfriendly = list('NA' = "",
@@ -251,6 +358,21 @@ do_cellspec = function(lst) {
 									'2' = list("&#9786;&#9786;", extra_css="font-size: 80%;", tooltip = "Extra colorblind-friendly! Also for points and lines", escape = FALSE),
 									'1' = list("&#9786;", extra_css="font-size: 80%;", tooltip = "Colorblind-friendly! Be careful with points and lines", escape = FALSE),
 									'-1' = list("&#128064;", extra_css ="font-size: 60%;", tooltip = "Be careful! Some colors are hard to distinguish by color blind people (see tab 'Color Blind Friendliness'", escape = FALSE)),
+					  # Single-glyph variant for the 4 per-CVD N/D/P/T
+					  # columns (cbf_none/_deutan/_protan/_tritan): with 4
+					  # independent columns per row, a 2-glyph icon (like
+					  # cbfriendly's paired smileys/eyes above) makes a row's
+					  # total count jump in twos (0/2/4/6/8), obscuring how
+					  # many of the 4 are actually flagged. One glyph per
+					  # column keeps that count direct (0-4). "Very
+					  # separable" gets a distinct (bigger-smile) glyph
+					  # rather than reusing "separable"'s, so the two
+					  # remain visually distinguishable even singular.
+					  cbf_cvd = list('NA' = "",
+									'0' = "",
+									'2' = list("&#9786;&#9786;", extra_css="font-size: 80%; letter-spacing: -0.15em;", tooltip = "Very separable! Also for points and lines", escape = FALSE),
+									'1' = list("&#9786;", extra_css="font-size: 80%;", tooltip = "Separable. Be careful with points and lines", escape = FALSE),
+									'-1' = list("&#128065;", extra_css ="font-size: 60%;", tooltip = "Be careful! Colors are hard to separate for this vision type (see tab 'Color Blind Friendliness')", escape = FALSE)),
 				  chroma = list('NA' = "",
 				  			  'H' = list("&#x1f576;", tooltip = "Vivid colors (high chroma) present: ideal for small important objects to stand out (e.g. markers on a map), but less suited for space filling visualizations because it may cause eye fatigue (see tab 'HCL Analysis')", escape = FALSE),
 				  			  'M' = "",

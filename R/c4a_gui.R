@@ -221,8 +221,25 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 					 	),
 
 					 	shiny::column(width = 3,
-					 				  shiny::selectizeInput("sort", "Sort palettes", choices = structure(c("name", "rank"), names = c("Name", .C4A$labels["cbfriendly"])), selected = "name"),
-					 				  shiny::div(style = "margin-top: 5px;", shiny::checkboxInput("sortRev", "Reverse sorting", value = FALSE)),
+					 				  # Static, not renderUI: get_cols()'s observer (below) already
+					 				  # rebuilds this dropdown's full choice list type-aware, straight
+					 				  # from table_columns() -- and it bails out if input$sort doesn't
+					 				  # exist yet, which a renderUI version briefly wouldn't on first
+					 				  # load, silently skipping that first population.
+					 				  shiny::selectizeInput("sort", "Sort palettes", choices = c(Name = "name", Rank = "rank"), selected = "name"),
+					 				  # A small gap here specifically: light.css zeroes .form-group/
+					 				  # .checkbox margins everywhere (that's what keeps the filter
+					 				  # checkboxes tight), but that leaves this checkbox flush against
+					 				  # the selectize widget's own visible border/padding above it,
+					 				  # which reads as cramped in a way checkbox-to-checkbox doesn't.
+					 				  shiny::div(style = "margin-top: 8px;", shiny::checkboxInput("sortRev", "Reverse sorting", value = FALSE)),
+					 				  # Only affects the "Colorblind-friendly" filter below (and,
+					 				  # for types without a per-CVD column breakdown, the CBF
+					 				  # badge) -- NOT the Separability columns in the categorical
+					 				  # table, which always show all 4 (N/D/P/T) individually.
+					 				  # Unchecked by default: tritan is ~400x rarer than deutan+
+					 				  # protan combined (~1 in 10,000 vs ~4% of the population).
+					 				  shiny::checkboxInput("include_tritan", "Include tritan in colorblind-friendly filter", value = FALSE),
 					 				  #shiny::div(style = "margin-bottom: 5px;", shiny::strong("Select")),
 					 				  shiny::div(class = "control-label2", "Filter"),
 					 				  shiny::uiOutput("filtersUI"),
@@ -275,21 +292,45 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 											  shiny::br(),
 											  shiny::br(),
 											  infoBoxUI("infoHueLines", "Hue lines")),
-								shiny::column(width = 8,
+								shiny::column(width = 6,
 											  shiny::br(),
 											  shiny::br(),
 											  infoBoxUI("infoSimi", "Separability"),
 											  shiny::tags$div(style = "margin-top:8px; max-width:220px;",
 											  	shiny::radioButtons("cbfType", NULL, choices = c("Lines", "Points"), inline = TRUE),
+											  	shiny::tags$div(style = "margin-top:10px",
 											  	shiny::conditionalPanel(
 											  		condition = "input.cbfType == 'Lines'",
 											  		shiny::sliderInput("cbfLineSize", NULL, min = 0.05, max = 0.2, value = 0.05, step = 0.05, post = "°", ticks = TRUE)
 											  	),
 											  	shiny::conditionalPanel(
 											  		condition = "input.cbfType == 'Points'",
-											  		shiny::sliderInput("cbfPointSize", NULL, min = 0.25, max = 1, value = 0.25, step = 0.25, post = "°", ticks = TRUE)
-											  	),
+											  		# Below point_discrim_prob()'s validated 0.25deg floor on purpose:
+											  		# real scatterplot points are usually smaller than 0.25deg, and a
+											  		# draft-quality reading here is more useful than none. Below
+											  		# ~0.16deg the model's per-axis slopes go negative (see
+											  		# palette_prob_bg.R) and predictions can become non-monotonic in
+											  		# size
+											  		shiny::sliderInput("cbfPointSize", NULL, min = 0.15, max = 0.25, value = 0.15, step = 0.05, post = "°", ticks = TRUE)
+											  	)),
 											  	shiny::checkboxInput("cbfShowNumbers", "Show percentage numbers", value = FALSE)
+											  )),
+								# Screen calibration for the line/point example charts below
+								# (cbf_ex1, same 150px-wide column): two blank/optional inputs,
+								# same unit (whichever the user likes -- only their ratio is
+								# used, see cbf_px_per_deg()), plus a reference line rendered at
+								# a known, fixed 150px so it can be measured against a physical
+								# ruler. Uncalibrated (either field blank) falls back to
+								# visual_angle_to_px()'s existing 30in/96dpi rule of thumb.
+								shiny::column(width = 2,
+											  shiny::br(),
+											  shiny::br(),
+											  infoBoxUI(title = "Calibration"),
+											  shiny::div(style = "margin-top:8px;",
+											  	shiny::numericInput("calibViewDist", "Viewing distance", value = 650, min = 0),
+											  	shiny::div(style = "margin-top:8px;", shiny::numericInput("calibRefLen", "Ruler measurement", value = 27, min = 0)),
+											  	shiny::tags$div(style = "width:150px; height:0; border-top:3px solid currentColor; margin-top:10px;"),
+											  	shiny::tags$div(style = "font-size:85%; color:#888; margin-top:4px;", "Measure with a ruler (same unit as viewing distance).")
 											  ))),
 							# Background Adjustment (bc_adj) is temporarily removed from the UI --
 							# we don't yet have a validated model for it (see palette_prob_bg()'s
@@ -682,7 +723,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 			shiny::sliderInput("nbiv", "Number of columns", min = 2, max = ifelse(type == "bivc", 10, 7), value = 3, ticks = FALSE)
 		})
 
-		output$filtersUI = shiny::renderUI({
+output$filtersUI = shiny::renderUI({
 			type = get_type12()
 			filters = c("Only n = nmax (categorical only)" = "nmax",
 						"Colorblind-friendly" = "cbf",
@@ -711,6 +752,16 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 			xl = c(res$ql, res$sl)
 			xn = c(res$qn, res$sn)
 
+			# Sort-only extras (e.g. cat/bivc's two "overall" separability
+			# aggregates) stay choosable here even when "Show scores" is off
+			# and they have no visible column of their own -- see
+			# table_columns()'s qn_sort/qs_sort.
+			extra_n = setdiff(res$qn_sort, res$qn)
+			if (length(extra_n)) {
+				xn = c(xn, extra_n)
+				xl = c(xl, gsub("&nbsp;", "", .C4A$labels[extra_n]))
+			}
+
 			anyD = duplicated(xl)
 			structure(c("name", xn[!anyD]), names = c("Name", xl[!anyD]))
 		})
@@ -718,7 +769,11 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 		get_trigger = shiny::reactiveVal(FALSE)
 
 		get_values = shiny::reactive({
-			if (input$sort == "") return(NULL)
+			# NULL, not just "": "sort" now comes from output$sortUI
+			# (renderUI, for the type-dependent Separability/Colorblind-
+			# friendly label), so input$sort doesn't exist yet on the very
+			# first reactive flush, before that UI has rendered client-side.
+			if (is.null(input$sort) || input$sort == "") return(NULL)
 			type = get_type12()
 			n = input$n
 			if (is.null(n)) return(NULL)
@@ -734,6 +789,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 				 sortRev = input$sortRev,
 				 series = series_d(),
 				 show.scores = input$advanced,
+				 include_tritan = isTRUE(input$include_tritan),
 				 columns = if (n > 16) 12 else n,
 				 na = input$na,
 				 range = if (input$auto_range == "Automatic") NA else input$range,
@@ -759,10 +815,10 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 					pal_names = NULL
 				} else {
 					if (substr(type, 1, 3) == "biv") {
-						prep = prep_table(type = type, n = nbiv, m = mbiv, sort = sort, series = series, range = range, colorsort = colorsort, show.scores = show.scores, columns = nbiv, verbose = FALSE, filters = filters)
+						prep = prep_table(type = type, n = nbiv, m = mbiv, sort = sort, series = series, range = range, colorsort = colorsort, show.scores = show.scores, columns = nbiv, verbose = FALSE, filters = filters, include_tritan = include_tritan)
 
 					} else {
-						prep = prep_table(type = type, n = n, continuous = continuous, sort = sort, series = series, range = range, colorsort = colorsort, show.scores = show.scores, columns = columns, verbose = FALSE, filters = filters)
+						prep = prep_table(type = type, n = n, continuous = continuous, sort = sort, series = series, range = range, colorsort = colorsort, show.scores = show.scores, columns = columns, verbose = FALSE, filters = filters, include_tritan = include_tritan)
 					}
 					pal_names = prep$zn$fullname
 				}
@@ -976,7 +1032,24 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 			} else {
 				x = c4a_info(pal)
 
-				if (tab_vals$n > x$nmax || tab_vals$n < x$nmin) return(NULL)
+				# tab_vals is shared across all 6 "Palette" selectors
+				# (cbfPal/CLPal/namePal/contrastPal/floatPal/APPPal) across
+				# different tabs. On first launch, before their selectize
+				# widgets have all settled, whichever one transiently fires
+				# with pal == "" first clears tab_vals to length-0 values
+				# (see the branch above) -- corrupting the shared state for
+				# the other five too, even though their own `pal` is valid.
+				# Self-heal every field this function reads below, once,
+				# here, rather than guarding each read site individually.
+				if (length(tab_vals$n) != 1 || is.na(tab_vals$n)) tab_vals$n = x$ndef
+				if (length(tab_vals$na) != 1 || is.na(tab_vals$na)) tab_vals$na = FALSE
+				if (length(tab_vals$pal_name) != 1 || is.na(tab_vals$pal_name)) tab_vals$pal_name = pal
+
+				# isTRUE(), not the bare comparison: x$nmax/x$nmin themselves
+				# (not tab_vals$n, already healed above) could still be NA in
+				# some other edge case -- same category as get_values()'s
+				# input$sort guard elsewhere in this file.
+				if (isTRUE(tab_vals$n > x$nmax) || isTRUE(tab_vals$n < x$nmin)) return(NULL)
 
 				cols = as.vector(c4a(x$fullname, n = tab_vals$n))
 				if (tab_vals$na) cols = c(cols, c4a_na(tab_vals$pal_name))
@@ -1148,17 +1221,37 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 			c4a_plot_dist_matrix(pal, cvd = "tritan", id1 = id1, id2 = id2, dark = input$dark, show_numbers = input$cbfShowNumbers, bc_adj = FALSE, thickness = cbf_thickness(), mark = cbf_mark())
 		})
 
+		# Screen calibration (see calibViewDist/calibRefLen in the UI, and the
+		# 150px reference line next to them): both inputs are in whatever
+		# arbitrary unit the user measured with, as long as it's the same
+		# unit for both -- only their ratio (px per unit) is used, so no
+		# unit conversion is needed. `2 * viewing_distance * tan(deg/2)` is
+		# the textbook-correct chord formula -- deliberately NOT the same as
+		# visual_angle_to_px()'s own default ("szafir" convention, factor 1,
+		# picked there to match Szafir's own preview figures); its docs
+		# explicitly call out "standard" (factor 2, used here) as what you
+		# want once calibrating against a real measured display, which is
+		# exactly this. So the rendered size can jump when calibration is
+		# first filled in -- that's the uncalibrated approximation being
+		# corrected, not a bug. Uncalibrated (either field blank/invalid)
+		# falls back to visual_angle_to_px()'s existing 30in/96dpi default.
+		cbf_px_per_deg = function(deg) {
+			vd = input$calibViewDist
+			rl = input$calibRefLen
+			calibrated = !is.null(vd) && !is.null(rl) && !is.na(vd) && !is.na(rl) && vd > 0 && rl > 0
+			if (!calibrated) return(visual_angle_to_px(deg))
+			px_per_unit = 150 / rl # 150: the reference line's fixed CSS width
+			len = 2 * vd * tan(deg * pi / 360)
+			len * px_per_unit
+		}
+
 		cbf_lines = function(cols, cvd) {
 			if (!length(cols)) return(NULL)
 
 			hcl = get_hcl_matrix(cols)
 
 			cols_cvd = sim_cvd(cols, cvd)
-			# visual_angle_to_px()'s default viewing conditions (30in, 96dpi)
-			# match Szafir's own assumptions, and base R's lwd is itself
-			# conventionally ~1/96 inch -- so at those defaults, px and lwd
-			# units line up directly. A rule of thumb, not a calibrated one.
-			lwd = visual_angle_to_px(cbf_thickness())
+			lwd = cbf_px_per_deg(cbf_thickness())
 			c4a_plot_lines(cols = c(cols_cvd[1], col2 = cols_cvd[2]), lwd = lwd, asp = .9, dark = input$dark)
 		}
 
@@ -1167,10 +1260,10 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 
 			cols_cvd = sim_cvd(cols, cvd)
 			# Point diameter -> grid "char" size is just a rough visual proxy
-			# (same px rule of thumb as cbf_lines()'s lwd, rescaled), unlike
-			# the underlying probability, which uses palette_prob_bg()'s own
+			# (same px conversion as cbf_lines()'s lwd, rescaled), unlike the
+			# underlying probability, which uses palette_prob_bg()'s own
 			# validated Szafir point-mark model (mark = "point").
-			size = visual_angle_to_px(cbf_thickness()) / 5
+			size = cbf_px_per_deg(cbf_thickness()) / 5
 			c4a_plot_scatter(cols = cols_cvd, size = size, lwd = 0, dark = input$dark)
 		}
 

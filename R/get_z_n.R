@@ -1,4 +1,4 @@
-get_z_n = function(z, n = NA, m = NA, filters = character(0), range = NA, colorsort = "orig") {
+get_z_n = function(z, n = NA, m = NA, filters = character(0), range = NA, colorsort = "orig", include_tritan = TRUE) {
 	# if (!is.null(n)) {
 
 	if ("nmax" %in% filters) {
@@ -33,7 +33,7 @@ get_z_n = function(z, n = NA, m = NA, filters = character(0), range = NA, colors
 
 
 	if (length(filters)) {
-		z3 = show_attach_scores(z2)
+		z3 = show_attach_scores(z2, include_tritan = include_tritan)
 
 		sels = lapply(filters, function(f) {
 			if (f == "cbf") {

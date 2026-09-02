@@ -60,7 +60,18 @@ check_div_pal = function(p) {
 	min_step = min(scores[,2])
 	tri_ineq = min(scores[,3])
 
-	sc = as(c(inter_wing_dist = inter_wing_dist, min_step = min_step, tri_ineq = tri_ineq), "integer")
+	# deutan+protan-only variants (see get_friendlyness()'s include_tritan arg):
+	# tritan is ~400x rarer than deutan+protan combined (~1 in 10,000 vs ~4%
+	# of the population), so it's exposed as an opt-in rather than folded
+	# into the default worst-case min(). Reuses the already-computed
+	# per-cvd `scores` rows -- no extra distance computation.
+	dp = c("deutan", "protan")
+	inter_wing_dist_dp = min(scores[dp, 1])
+	min_step_dp = min(scores[dp, 2])
+	tri_ineq_dp = min(scores[dp, 3])
+
+	sc = as(c(inter_wing_dist = inter_wing_dist, min_step = min_step, tri_ineq = tri_ineq,
+			  inter_wing_dist_dp = inter_wing_dist_dp, min_step_dp = min_step_dp, tri_ineq_dp = tri_ineq_dp), "integer")
 	prop = hcl_prop(p)
 	rgb = rgb_prop(p)
 
@@ -83,7 +94,7 @@ check_bivs_pal = function(p) {
 	x1d = check_div_pal(c(rev(p1[-1]), pd))
 	x2d = check_div_pal(c(rev(p2[-1]), pd))
 
-	sc = pmin(x12, x1d, x2d)[1:2]
+	sc = pmin(x12, x1d, x2d)[c("inter_wing_dist", "min_step", "inter_wing_dist_dp", "min_step_dp")]
 
 	p2 = c(as.vector(p[lower.tri(p)]), p[1,1], as.vector(p[upper.tri(p)]))
 
@@ -100,7 +111,7 @@ check_bivc_pal = function(p) {
 		check_cat_pal(p[i, ])
 	})
 
-	sc = do.call(pmin, res)[1:2]
+	sc = do.call(pmin, res)[c("min_dist_none", "min_dist_deutan", "min_dist_protan", "min_dist_tritan", "nameability")]
 
 	p2 = as.vector(p)
 
@@ -124,7 +135,7 @@ check_bivd_pal = function(p) {
 	x12 = check_div_pal(c(rev(p[,c1]), "#FFFFFF", p[,c2]))
 	x23 = check_div_pal(c(rev(p[,c2]), "#FFFFFF", p[,c3]))
 
-	sc = pmin(x12, x13, x23)[1:2]
+	sc = pmin(x12, x13, x23)[c("inter_wing_dist", "min_step", "inter_wing_dist_dp", "min_step_dp")]
 
 	p2 = c(rev(p[, 1]), p[1, round((ncol(p)+1)/2)], p[, ncol(p)])
 	prop = hcl_prop(p2)
@@ -134,7 +145,7 @@ check_bivd_pal = function(p) {
 }
 
 check_bivg_pal = function(p) {
-	sc = check_div_pal(c(rev(p[,1]), "#FFFFFF", p[,ncol(p)]))[1:2]
+	sc = check_div_pal(c(rev(p[,1]), "#FFFFFF", p[,ncol(p)]))[c("inter_wing_dist", "min_step", "inter_wing_dist_dp", "min_step_dp")]
 
 	p2 = c(rev(p[, 1]), p[1, round((ncol(p)+1)/2)], p[, ncol(p)])
 	prop = hcl_prop(p2)
@@ -187,7 +198,11 @@ check_seq_pal = function(p) {
 		c(min_step = round(min_step_size * 100), max_step = round(max_step_size * 100), min_dist = round(min_dist * 100), tri_ineq = round(tri_ineq * 100))
 	}))
 
-	sc = as(c(min_step = min(scores[,1]), max_step = min(scores[,2]), min_dist = min(scores[,3]), tri_ineq = min(scores[,4])), "integer")
+	# deutan+protan-only variants -- see get_friendlyness()'s include_tritan arg
+	dp = c("deutan", "protan")
+
+	sc = as(c(min_step = min(scores[,1]), max_step = min(scores[,2]), min_dist = min(scores[,3]), tri_ineq = min(scores[,4]),
+			  min_step_dp = min(scores[dp,1]), max_step_dp = min(scores[dp,2]), min_dist_dp = min(scores[dp,3]), tri_ineq_dp = min(scores[dp,4])), "integer")
 	prop = hcl_prop(p)
 	rgb = rgb_prop(p)
 
@@ -205,14 +220,32 @@ check_cyc_pal = function(p) {
 #
 # Check categorical palette. It computes one quality indicator: the \code{min_dist}, the minimal distance between any two colors. This is computed for all three color vision deficiency types: the worst (i.e. lowest) score is returned.
 check_cat_pal = function(p) {
-	if (length(p) == 1) return(c(min_dist = Inf))
+	# No aggregated min_dist/min_dist_dp anymore: cat is fully represented by
+	# the 4 raw per-cvd values below (single source of truth), and
+	# get_friendlyness() derives its worst-case aggregate from those
+	# on the fly (respecting include_tritan) rather than reading a
+	# pre-collapsed column. Other types (seq/div/cyc/bivs/bivd/bivg) don't
+	# have this per-cvd breakdown yet, so they still store/read min_dist/
+	# min_dist_dp directly -- that's unaffected by this function.
+	if (length(p) == 1) return(c(min_dist_none = Inf, min_dist_deutan = Inf, min_dist_protan = Inf, min_dist_tritan = Inf))
 	cvds = c("deutan", "protan", "tritan")
 
 	scores = sapply(cvds, function(cvd) {
-		get_dist_matrix(p, cvd = cvd)
+		get_prob_matrix(p, cvd = cvd)
 	})
+	# unsimulated (normal color vision) baseline -- not part of any
+	# colorblind-friendly aggregate, shown as its own reference column
+	scores_none = get_prob_matrix(p, cvd = "none")
 
-	sc = c(min_dist = as.integer(round(min(scores, na.rm = TRUE) * 100)), nameability = as.integer(nameability(p)))
+	# No *100 here: get_prob_matrix() already returns 0-100 (a percentage),
+	# so multiplying again would double-scale it. show_attach_scores() no
+	# longer divides these back by 100 either (removed from score_x100 in
+	# onLoad.R) -- round() alone is enough precision for a percentage.
+	sc = c(min_dist_none = as.integer(round(min(scores_none, na.rm = TRUE))),
+		   min_dist_deutan = as.integer(round(min(scores[, "deutan"], na.rm = TRUE))),
+		   min_dist_protan = as.integer(round(min(scores[, "protan"], na.rm = TRUE))),
+		   min_dist_tritan = as.integer(round(min(scores[, "tritan"], na.rm = TRUE))),
+		   nameability = as.integer(nameability(p)))
 	prop = hcl_prop(p)
 	rgb = rgb_prop(p)
 
@@ -221,18 +254,23 @@ check_cat_pal = function(p) {
 
 # experimental: with white
 check_cat_pal2 = function(p) {
-	if (length(p) == 1) return(c(min_dist = Inf))
+	if (length(p) == 1) return(c(min_dist = Inf, min_dist_dp = Inf))
 	cvds = c("deutan", "protan", "tritan")
+	dp = c("deutan", "protan")
 
 	scores = sapply(cvds, function(cvd) {
-		get_dist_matrix(p, cvd = cvd)
+		get_prob_matrix(p, cvd = cvd)
 	})
 
 	scores_wt = sapply(cvds, function(cvd) {
-		get_dist_matrix(p, cvd = cvd, bgcol = "#ffffff")
+		get_prob_matrix(p, cvd = cvd, bgcol = "#ffffff")
 	})
 
-	sc = c(min_dist = as.integer(round(min(scores, na.rm = TRUE) * 100)), min_dist_wt = as.integer(round(min(scores_wt, na.rm = TRUE) * 100)), nameability = as.integer(nameability(p)))
+	sc = c(min_dist = as.integer(round(min(scores, na.rm = TRUE) * 100)),
+		   min_dist_dp = as.integer(round(min(scores[, dp], na.rm = TRUE) * 100)),
+		   min_dist_wt = as.integer(round(min(scores_wt, na.rm = TRUE) * 100)),
+		   min_dist_wt_dp = as.integer(round(min(scores_wt[, dp], na.rm = TRUE) * 100)),
+		   nameability = as.integer(nameability(p)))
 	prop = hcl_prop(p)
 	rgb = rgb_prop(p)
 

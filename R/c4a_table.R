@@ -7,46 +7,119 @@ table_columns = function(type, show.scores) {
 		qs = "nmax"
 	}
 
-	qn = c(qn, "cbfriendly", "fair")
-	qs = c(qs, "cbfriendly", "fairness")
-
-	if (type == "seq") {
-		qn = c(qn, "hues", "chroma", "contrastWT", "contrastBK", "float")
-		qs = c(qs, "Hwidth", "Cmax", "CRwt", "CRbk", "Blues")
-		sn = "H"
-	} else if (type == "cyc") {
-		qn = c(qn, "chroma", "contrastWT", "contrastBK", "float")
-		qs = c(qs, "Cmax", "CRwt", "CRbk", "Blues")
-		sn = character(0)
-	} else if (type %in% c("div", "bivs", "bivd", "bivg")) {
-		qn = c(qn, "chroma", "hues", "contrastWT", "contrastBK", "float")
-		qs = c(qs, "Cmax",  "HwidthLR", "CRwt", "CRbk", "Blues")
-		sn = c("HL", "HR", "Lmid")
-	} else if (type == "cat") {
-		qn = c(qn, "hues", "chroma", "contrastWT", "contrastBK", "equiluminance", "float", "nameable")
-		qs = c(qs, "Hspread", "Cmax", "CRwt", "CRbk", "CRmin", "Blues", "nameability")
-		sn = character(0)
+	# Each icon column is placed directly next to its "show scores" raw
+	# counterpart(s) (dropped via c()'s NULL-handling when show.scores is
+	# off, or when a type has no icon/no raw counterpart for a theme).
+	# Columns with no related icon at all (Luminance; cat/bivc's overall
+	# separability, which has no per-CVD icon of its own) go at the very
+	# end, on the right -- see plot_table() for the matching group headers.
+	if (type == "cat") {
+		# 4 per-CVD badges instead of 1 worst-case aggregate -- see
+		# show_attach_scores()'s cbf_none/_deutan/_protan/_tritan
+		qn = c(qn, "cbf_none", if (show.scores) "min_dist_none",
+				   "cbf_deutan", if (show.scores) "min_dist_deutan",
+				   "cbf_protan", if (show.scores) "min_dist_protan",
+				   "cbf_tritan", if (show.scores) "min_dist_tritan",
+				   if (show.scores) "min_dist_overall",
+				   if (show.scores) "min_dist_overall_dp")
+		qs = c(qs, "cbf_none", if (show.scores) "min_dist_none",
+				   "cbf_deutan", if (show.scores) "min_dist_deutan",
+				   "cbf_protan", if (show.scores) "min_dist_protan",
+				   "cbf_tritan", if (show.scores) "min_dist_tritan",
+				   if (show.scores) "min_dist_overall",
+				   if (show.scores) "min_dist_overall_dp")
 	} else if (type == "bivc") {
-		qn = c(qn, "chroma", "contrastWT", "contrastBK", "equiluminance", "float", "nameable")
-		qs = c(qs, "Cmax", "CRwt", "CRbk", "CRmin", "Blues", "nameability")
-		sn = character(0)
+		# Single aggregate icon (not 4 per-CVD badges, see above) but the
+		# same 6 raw columns as cat (CB_ranges$bivc) -- no 1:1 icon per raw
+		# column is possible here, so all 6 cluster after the one icon.
+		qn = c(qn, "cbfriendly", if (show.scores) c("min_dist_none", "min_dist_deutan", "min_dist_protan", "min_dist_tritan", "min_dist_overall", "min_dist_overall_dp"))
+		qs = c(qs, "cbfriendly", if (show.scores) c("min_dist_none", "min_dist_deutan", "min_dist_protan", "min_dist_tritan", "min_dist_overall", "min_dist_overall_dp"))
 	} else {
-		stop("Unknown type")
+		qn = c(qn, "cbfriendly")
+		qs = c(qs, "cbfriendly")
+		# non-bivc, non-cat: pair with whatever aggregate raw score(s) this
+		# type actually has (mirrors the old CB_ranges[[type]] names)
+		score_pair = switch(type,
+			seq = , cyc = c("min_dist", "tri_ineq"),
+			div = c("inter_wing_dist", "min_step", "tri_ineq"),
+			bivs = , bivd = , bivg = c("inter_wing_dist", "min_step"))
+		if (show.scores && length(score_pair)) {
+			qn = c(qn, score_pair)
+			qs = c(qs, score_pair)
+		}
 	}
 
+	qn = c(qn, "fair", if (show.scores) "fairness")
+	qs = c(qs, "fair", if (show.scores) "fairness")
 
+	has_hues = type %in% c("seq", "div", "cat", "bivs", "bivd", "bivg")
+	has_equiluminance = type %in% c("cat", "bivc")
+	has_nameable = type %in% c("cat", "bivc")
+
+	hues_qs = switch(type, cat = "Hspread", seq = "Hwidth", "HwidthLR") # div/bivs/bivd/bivg
+	hue_raw = c("H", "HL", "HR", "Hwidth", "Hspread", "HwidthL", "HwidthR")
+
+	if (has_hues) {
+		qn = c(qn, "hues", if (show.scores) hue_raw)
+		qs = c(qs, hues_qs, if (show.scores) hue_raw)
+	}
+
+	qn = c(qn, "chroma", if (show.scores) c("Cmax", "Crange"))
+	qs = c(qs, "Cmax", if (show.scores) c("Cmax", "Crange"))
+
+	qn = c(qn, "contrastWT", if (show.scores) "CRwt")
+	qs = c(qs, "CRwt", if (show.scores) "CRwt")
+	qn = c(qn, "contrastBK", if (show.scores) "CRbk")
+	qs = c(qs, "CRbk", if (show.scores) "CRbk")
+	if (has_equiluminance) {
+		qn = c(qn, "equiluminance", if (show.scores) "CRmin")
+		qs = c(qs, "CRmin", if (show.scores) "CRmin")
+	}
+
+	qn = c(qn, "float", if (show.scores) "Blues")
+	qs = c(qs, "Blues", if (show.scores) "Blues")
+
+	if (has_nameable) {
+		qn = c(qn, "nameable")
+		qs = c(qs, "nameability")
+	}
+
+	# Orphans: no related icon at all, regardless of type -- pushed to the
+	# far right, same spot the old wholesale show.scores block used to add
+	# everything (see plot_table() -- these get no group header for Hue if
+	# a type has no "hues" icon, e.g. bivc).
 	if (show.scores) {
-		qn = c(qn, names(.C4A$CB_ranges[[type]]), .C4A$hcl2, .C4A$rgb)
-		qs = c(qs, names(.C4A$CB_ranges[[type]]), .C4A$hcl2, .C4A$rgb)
+		if (!has_hues) {
+			qn = c(qn, hue_raw)
+			qs = c(qs, hue_raw)
+		}
+		qn = c(qn, "Lmid", "Lrange")
+		qs = c(qs, "Lmid", "Lrange")
 	}
+
+	sn = switch(type, seq = "H", div = , bivs = , bivd = , bivg = c("HL", "HR", "Lmid"), character(0))
+
 	ql = gsub("&nbsp;", "", .C4A$labels[qn])
 
 	sl = .C4A$labels[sn]
 
-	list(qn = qn, ql = ql, qs = qs, sn = sn, sl = sl)
-}
+	# qn_sort/qs_sort: sortable, not necessarily displayed. cat/bivc's two
+	# "overall" separability aggregates only get their own visible column
+	# under show.scores (no dedicated icon to pair with, see above), but
+	# should stay choosable as a sort key regardless -- sorting by the
+	# overall picture shouldn't require also showing all the individual
+	# per-CVD/Hue/Chroma/etc columns just to unlock it.
+	qn_sort = qn
+	qs_sort = qs
+	if (type %in% c("cat", "bivc")) {
+		extra = setdiff(c("min_dist_overall", "min_dist_overall_dp"), qn)
+		qn_sort = c(qn_sort, extra)
+		qs_sort = c(qs_sort, extra)
+	}
 
-prep_table = function(type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd", "bivg"), n = NULL, m = NULL, sort = "name", series = "all", filters = character(0), range = NA, colorsort = "orig", show.scores = FALSE, columns = NA, verbose = TRUE, continuous = FALSE) {
+	list(qn = qn, ql = ql, qs = qs, sn = sn, sl = sl, qn_sort = qn_sort, qs_sort = qs_sort)
+}
+prep_table = function(type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd", "bivg"), n = NULL, m = NULL, sort = "name", series = "all", filters = character(0), range = NA, colorsort = "orig", show.scores = FALSE, columns = NA, verbose = TRUE, continuous = FALSE, include_tritan = TRUE) {
 	id = NULL
 
 	type = match.arg(type)
@@ -91,7 +164,7 @@ prep_table = function(type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd
 		return(invisible(NULL))
 	}
 
-	zn = get_z_n(z[z$type == type, ], n = n, m = m, filters = filters, range = range, colorsort = colorsort)
+	zn = get_z_n(z[z$type == type, ], n = n, m = m, filters = filters, range = range, colorsort = colorsort, include_tritan = include_tritan)
 	if (!is.null(zn)) {
 		if (!series[1] == "all") zn = zn[zn$series %in% series, ]
 	}
@@ -101,7 +174,7 @@ prep_table = function(type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd
 		return(invisible(NULL))
 	}
 
-	zn = show_attach_scores(zn)
+	zn = show_attach_scores(zn, include_tritan = include_tritan)
 	# better but slower alternative: calculate all scores read time:
 	#zn = get_scores_zn(zn)
 
@@ -127,7 +200,7 @@ prep_table = function(type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd
 		"fullname"
 	} else if (sort %in% c("H", "HL", "HR", "Lmid")) {
 		sort
-	} else qs[which(sort == qn)]
+	} else res$qs_sort[which(sort == res$qn_sort)]
 
 	if (length(sortCol) == 0L) {
 		warning("unknown sort value, available options: \"name\", \"H\", \"HL\", \"HR\", \"Lmid\", \"", paste(qn, collapse = "\", \""), "\"")
@@ -154,7 +227,7 @@ prep_table = function(type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd
 		#zn$palette = lapply(zn$palette, function(p) as.vector(t(p[nrow(p):1L,])))
 		zn$palette = lapply(zn$palette, function(p) as.vector(t(p)))
 	}
-	list(zn = zn, n = n, m = m, columns = columns, continuous = continuous, type = type, qn = qn, ql = ql)
+	list(zn = zn, n = n, m = m, columns = columns, continuous = continuous, type = type, qn = qn, ql = ql, include_tritan = include_tritan)
 }
 
 plot_table = function(p, text.format, text.col, include.na, cvd.sim, coltemp, verbose) {
@@ -336,13 +409,17 @@ plot_table = function(p, text.format, text.col, include.na, cvd.sim, coltemp, ve
 
 
 	rownames(e2) = NULL
-	for (var in c("cbfriendly", "chroma",  "hues", "fair", "nameable", "equiluminance", "contrastWT", "contrastBK", "float")) {
-		tcv = tc[[var]]
+	# cbf_none/_deutan/_protan/_tritan (cat only) reuse cbfriendly's icon set
+	# (same 2/1/0/-1 scale, same smiley/eye badges) -- one column per CVD
+	# state instead of one worst-case aggregate. See show_attach_scores().
+	for (var in c("cbfriendly", "cbf_none", "cbf_deutan", "cbf_protan", "cbf_tritan", "chroma",  "hues", "fair", "nameable", "equiluminance", "contrastWT", "contrastBK", "float")) {
+		tc_key = if (startsWith(var, "cbf_")) "cbf_cvd" else var
+		tcv = tc[[tc_key]]
 		if (any(names(tcv) %in% c("seq", "cat", "div", "cyc"))) {
 			tcv = if (type %in% names(tcv)) tcv[[type]]	else tcv[["x"]]
 		}
 		if (var %in% qn) {
-			if (var == "cbfriendly") {
+			if (var == "cbfriendly" || startsWith(var, "cbf_")) {
 				# because sorting order is encoded in the color blind friendly column (see get_friendlyness)
 				chr = as.character(round(e2[[var]]))
 			} else {
@@ -354,7 +431,7 @@ plot_table = function(p, text.format, text.col, include.na, cvd.sim, coltemp, ve
 	}
 
 
-	all_icons = c("cbfriendly", "chroma", "fair")
+	all_icons = c("cbfriendly", "cbf_none", "cbf_deutan", "cbf_protan", "cbf_tritan", "chroma", "fair")
 
 	qn_icons = intersect(qn, all_icons)
 	qn_other = setdiff(qn, all_icons)
@@ -461,6 +538,93 @@ plot_table = function(p, text.format, text.col, include.na, cvd.sim, coltemp, ve
 	kc = k[1]
 
 	kl = strsplit(kc, "\n")[[1]]
+
+	{
+		# Manual raw-HTML group-header row(s), one span per contiguous block
+		# of related columns -- not kableExtra::add_header_above(), which
+		# builds its own row via a different code path than the rest of this
+		# function's manual header/cell HTML surgery; staying consistent
+		# with that is safer than mixing in a higher-level helper untested
+		# against it.
+		#
+		# Columns are now interleaved (each icon sits directly next to its
+		# raw "show scores" counterpart(s), see table_columns()), so a span's
+		# width varies with show.scores/type -- computed here as "up to (but
+		# not including) wherever the next known section starts", not a
+		# literal count. next_boundary() picks the closest candidate that's
+		# actually to the right of `from`, so the same call works whether a
+		# group is icon-anchored (e.g. Hue ending at "chroma") or an orphan
+		# with no icon (e.g. Hue ending at "Lmid", when a type has no "hues"
+		# icon -- see table_columns()'s has_hues).
+		next_boundary = function(from, candidates) {
+			pos = match(candidates, e2cols)
+			pos = pos[!is.na(pos) & pos > from]
+			if (length(pos)) min(pos) - 1L else length(e2cols)
+		}
+
+		spans = list()
+		cbf_first = intersect(c("cbf_none", "cbfriendly"), e2cols)[1]
+		if (!is.na(cbf_first)) {
+			spans[[length(spans) + 1]] = list(
+				first = cbf_first,
+				last_pos = next_boundary(match(cbf_first, e2cols), "fair"),
+				label = if (type %in% c("cat", "bivc")) "Separability" else "Colorblind-friendly"
+			)
+		}
+		hue_first = intersect(c("hues", "H"), e2cols)[1]
+		if (!is.na(hue_first)) {
+			spans[[length(spans) + 1]] = list(
+				first = hue_first,
+				last_pos = next_boundary(match(hue_first, e2cols), c("chroma", "Lmid")),
+				label = "Hue"
+			)
+		}
+		spans[[length(spans) + 1]] = list(
+			first = "chroma",
+			last_pos = next_boundary(match("chroma", e2cols), "contrastWT"),
+			label = "Chroma"
+		)
+		spans[[length(spans) + 1]] = list(
+			first = "contrastWT",
+			last_pos = next_boundary(match("contrastWT", e2cols), "float"),
+			label = "Contrast Ratio"
+		)
+		if ("Lmid" %in% e2cols) {
+			spans[[length(spans) + 1]] = list(
+				first = "Lmid",
+				last_pos = match("Lrange", e2cols),
+				label = "Luminance"
+			)
+		}
+		if (length(spans)) {
+			spans = lapply(spans, function(sp) {
+				sp$n = sp$last_pos - match(sp$first, e2cols) + 1L
+				sp
+			})
+			# order by position, then build one row covering all of them,
+			# with blank (borderless) filler cells everywhere else
+			starts = sapply(spans, function(sp) match(sp$first, e2cols))
+			spans = spans[order(starts)]
+			cells = character(0)
+			pos = 1L
+			for (sp in spans) {
+				first_col = match(sp$first, e2cols)
+				n_before = first_col - pos
+				if (n_before > 0) cells = c(cells, sprintf('<th colspan="%d" style="border:none;"></th>', n_before))
+				cells = c(cells, sprintf('<th colspan="%d" style="text-align:center; font-weight:bold; padding:2px 3px; border-bottom:1px solid #ddd;">%s</th>', sp$n, sp$label))
+				pos = first_col + sp$n
+			}
+			n_after = length(e2cols) - pos + 1L
+			if (n_after > 0) cells = c(cells, sprintf('<th colspan="%d" style="border:none;"></th>', n_after))
+			# ONE line (no embedded "\n"), so it can't collide with the
+			# exact-string "  <tr>" match trIDs relies on just below to
+			# find body rows.
+			group_row = paste0("  <tr>", paste(cells, collapse = ""), "</tr>")
+			hdr_idx = which(kl == "  <tr>")[1]
+			kl = append(kl, group_row, after = hdr_idx - 1L)
+		}
+	}
+
 	trIDs = which(kl == "  <tr>")[-1]
 	rws1 = trIDs[e2$ind==1] # first line per palette
 	rws2 = trIDs[e2$ind!=1] # other lines
