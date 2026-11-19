@@ -32,7 +32,9 @@ for supported values.}
 \item{thickness}{mark size in degrees of visual angle -- line thickness
 when \code{mark = "line"}, point diameter when \code{mark = "point"} -- passed to
 the underlying \code{\link[=line_discrim_prob]{line_discrim_prob()}} / \code{\link[=point_discrim_prob]{point_discrim_prob()}} model. See
-their documentation for the (different) validated ranges.}
+their documentation for the (different) validated ranges. For
+\code{mark = "point"}, sizes below 0.25 degrees are set to 0.25 degrees (with
+a warning), because the point model is not valid below that size.}
 
 \item{mark}{which Szafir (2018) model to use: \code{"line"} (line graphs) or
 \code{"point"} (scatterplots). See \code{\link[=line_discrim_prob]{line_discrim_prob()}} and

@@ -19,3 +19,6 @@
 ^vignettes$
 ^\.positai$
 ^\.claude$
+^experiment$
+^Rplots\.pdf$
+^[^/]+\.png$

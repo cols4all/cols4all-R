@@ -1,3 +1,13 @@
+# cols4all 0.11
+- Scientific colour maps (series "scico") updated to version 9.0
+- palette "tableau.red_blue_brown" renamed to "tableau.blue_red_brown" (following ggthemes); the old name still works
+- separability of colors is now expressed as the percentage of people that can tell two lines or points apart, based on Szafir (2018); see palette_prob_bg()
+- second tab of c4a_gui() renamed to "Color Discrimination"
+- c4a_gui() and c4a_table() can simulate a warmer display color temperature, e.g. night mode (approximation)
+- c4a_table() and c4a_scores() have an argument include_tritan
+- c4a_gui() and c4a_table() explain why no palettes are found and what to change
+- c4a_gui() is faster and keeps the selected palette in sync across tabs
+
 # cols4all 0.10
 - palettes from bivario added
 - black and white option added

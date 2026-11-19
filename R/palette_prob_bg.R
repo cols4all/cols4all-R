@@ -24,7 +24,8 @@
 #    (k is more negative, relative to c, than for "line"), which is not a
 #    meaningful extrapolation at all, just a sign flip from being far
 #    outside the fitted domain. Point sizes well under ~0.25 deg should not
-#    be trusted.
+#    be trusted; palette_prob_bg() therefore clamps them to 0.25 deg (with a
+#    warning).
 # 3. Cross-axis combination (Euclidean, above) was proposed by the paper for
 #    real multi-axis color pairs but not directly tested that way -- axis
 #    was a between-participants factor in the original experiments.
@@ -51,6 +52,10 @@
 		B = c(c = 0.0611, k = -0.0096)
 	)
 )
+
+# Smallest validated point size (deg). Below ~0.16 deg the a*/b* slopes of the
+# point model become negative
+.point_size_min = 0.25
 
 .mark_discrim_slope = function(s, axis, mark = "line") {
 	co = .mark_coefs[[mark]][[axis]]
@@ -265,7 +270,9 @@ px_to_visual_angle = function(px, viewing_distance_in = 30, dpi = 96,
 #' @param thickness mark size in degrees of visual angle -- line thickness
 #'   when `mark = "line"`, point diameter when `mark = "point"` -- passed to
 #'   the underlying [line_discrim_prob()] / [point_discrim_prob()] model. See
-#'   their documentation for the (different) validated ranges.
+#'   their documentation for the (different) validated ranges. For
+#'   `mark = "point"`, sizes below 0.25 degrees are set to 0.25 degrees (with
+#'   a warning), because the point model is not valid below that size.
 #' @param mark which Szafir (2018) model to use: `"line"` (line graphs) or
 #'   `"point"` (scatterplots). See [line_discrim_prob()] and
 #'   [point_discrim_prob()].
@@ -285,7 +292,11 @@ palette_prob_bg = function(x, bgcol = "#FFFFFF", cvd = NULL, severity = 1,
 							lum_k = 100, lum_floor = 0.05,
 							lum_adjust = FALSE) {
 	mark = match.arg(mark)
-	x_use = if (!is.null(cvd)) cols4all:::sim_cvd(x, cvd = cvd, severity = severity) else x
+	if (mark == "point" && thickness < .point_size_min) {
+		warning("The point model is only valid for point sizes of at least ", .point_size_min, " degrees, so thickness = ", thickness, " is set to ", .point_size_min, ".", call. = FALSE)
+		thickness = .point_size_min
+	}
+	x_use = if (!is.null(cvd)) sim_cvd(x, cvd = cvd, severity = severity) else x
 
 	lab = colorspace::coords(as(colorspace::hex2RGB(x_use), "LAB"))[, c("L", "A", "B"), drop = FALSE]
 

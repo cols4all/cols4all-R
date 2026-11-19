@@ -170,7 +170,10 @@ prep_table = function(type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd
 	}
 
 	if (is.null(zn) || nrow(zn) == 0) {
-		if (verbose) message("No palettes of type \"", type, "\"", ifelse(is.null(n), "", paste0(" and length ", n)), " found")
+		if (verbose) {
+			ex = explain_no_palettes(type = type, n = n, m = if (substr(type, 1, 3) == "biv") m else NA, series = series, filters = filters, include_tritan = include_tritan)
+			message(paste(c(ex$title, paste("-", ex$details)), collapse = "\n"))
+		}
 		return(invisible(NULL))
 	}
 
@@ -656,7 +659,7 @@ plot_table = function(p, text.format, text.col, include.na, cvd.sim, coltemp, ve
 #' @param continuous should the palettes as continuous instead of discrete. Only applicable for `"seq"`, `"div"`, and `"cyc"`.
 #' @param filters filters to be applied. A character vector with a subset from:`"nmax"` (only palettes where `n = nmax`, which is only applicable for categorical palettes),  `"cbf"` (colorblind-friendly), `"fair"` (fairness),`"naming"` (nameability),  `"crW"` (sufficient contrast ratio with white), and `"crB"` (sufficient contrast ratio with black). By default an empty vector, so no filters are applied.
 #' @param cvd.sim color vision deficiency simulation: one of `"none"`, `"bw"`, `"deutan"`, `"protan"`, `"tritan"`
-#' @param col.temp color temperature, by default 6500K
+#' @param col.temp display color temperature in Kelvin: one of `6500` (default), `4000`, `2700` and `2200`. Lower values simulate a display with a warmer white point, such as night mode. Viewers partly adapt to a warmer white, so the perceived shift is much smaller than the physical shift of the emitted light. To approximate the perceived colors, white is mapped to a fixed perceived white per temperature (the page background used in [c4a_gui()]: `#F4F1EA`, `#F3E6D3` and `#ECD6B3` respectively), and all other colors are transformed accordingly with a von Kries chromatic adaptation transform in Bradford cone space. The amount of adaptation in reality depends on viewing conditions and time.
 #' @param sort column name to sort the data. The available column names depend on the arguments `type` and `show.scores`. They are listed in the warning message. Use a `"-"` prefix to reverse the order.
 #' @param text.format The format of the text of the colors. One of `"hex"`, `"RGB"` or `"HCL"`.
 #' @param text.col The text color of the colors. By default `"same"`, which means that they are the same as the colors themselves (so invisible, but available for selection). `"auto"` means automatic: black for light colors and white for dark colors.
@@ -664,6 +667,7 @@ plot_table = function(p, text.format, text.col, include.na, cvd.sim, coltemp, ve
 #' @param range vector of two numbers that determine the range that is used for sequential and diverging palettes. Both numbers should be between 0 and 1. The first number determines where the palette begins, and the second number where it ends. For sequential palettes, 0 means the leftmost (normally lightest) color, and 1 the rightmost (often darkest) color. For diverging palettes, 0 means the middle color, and 1 both extremes. If only one number is provided, this number is interpreted as the endpoint (with 0 taken as the start). By default, it is set automatically, based on `n`.
 #' @param colorsort Sort the colors (`"cat"` only). Options: `"orig"` (original order), `"Hx"` (hue, where x is a starting number from 0 to 360), `"C"` (chroma), `"L"` (luminance)
 #' @param include.na should color for missing values be shown? `FALSE` by default
+#' @param include_tritan should tritan (blue-yellow color vision deficiency, about 1 in 10,000 people) be taken into account by the colorblind-friendly filter (`filters = "cbf"`) and badge, besides deutan and protan (red-green, together about 4% of the population)? `FALSE` by default, as in `c4a_gui()`.
 #' @param show.scores should scores of the quality indicators be printed? See details for a description of those indicators.
 #' @param columns number of columns. By default equal to `n` or, if not specified, 12. Cannot be higher than the palette lengths.
 #' @param verbose should messages and warnings be printed?
@@ -680,8 +684,9 @@ plot_table = function(p, text.format, text.col, include.na, cvd.sim, coltemp, ve
 #' @return An HMTL table (`kableExtra` object)
 #' @rdname c4a_gui
 #' @name c4a_table
-c4a_table = function(type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd", "bivg"), n = NULL, m = NULL, continuous = FALSE, filters = character(0), cvd.sim = c("none", "bw", "deutan", "protan", "tritan"), col.temp = 6500, sort = "name", text.format = "hex", text.col = "same", series = "all", range = NA, colorsort = "orig", include.na = FALSE, show.scores = FALSE, columns = NA, verbose = TRUE) {
+c4a_table = function(type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd", "bivg"), n = NULL, m = NULL, continuous = FALSE, filters = character(0), cvd.sim = c("none", "bw", "deutan", "protan", "tritan"), col.temp = 6500, sort = "name", text.format = "hex", text.col = "same", series = "all", range = NA, colorsort = "orig", include.na = FALSE, include_tritan = FALSE, show.scores = FALSE, columns = NA, verbose = TRUE) {
 	cvd.sim = match.arg(cvd.sim)
-	p = prep_table(type = type, n = n, m = m, continuous = continuous, filters = filters, sort = sort, series = series, range = range, colorsort = colorsort, show.scores = show.scores, columns = columns, verbose = verbose)
+	p = prep_table(type = type, n = n, m = m, continuous = continuous, filters = filters, sort = sort, series = series, range = range, colorsort = colorsort, show.scores = show.scores, columns = columns, verbose = verbose, include_tritan = include_tritan)
+	if (is.null(p)) return(invisible(NULL))
 	plot_table(p = p, text.format = text.format, text.col = text.col, include.na = include.na, cvd.sim = cvd.sim, coltemp = as.character(col.temp), verbose = verbose)
 }

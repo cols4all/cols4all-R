@@ -26,6 +26,21 @@ check_name_presence = function(name, verbose = TRUE) {
 	NULL
 }
 
+# Palettes that have been renamed: old full name = new full name
+.renamed_palettes = c(tableau.red_blue_brown = "tableau.blue_red_brown") # cols4all 0.11 (following ggthemes 7.0.0)
+
+# Is name (or one of its spellings) a renamed palette? If so, return the new full name
+check_renamed = function(names, verbose = TRUE) {
+	old = names(.renamed_palettes)
+	old_short = sub("^[^.]*\\.", "", old)
+	id = which(old %in% names | old_short %in% names)[1]
+	if (is.na(id)) return(NULL)
+	new = unname(.renamed_palettes[id])
+	if (!(new %in% .C4A$z$fullname)) return(NULL)
+	if (verbose) message("Palette \"", old[id], "\" has been renamed to \"", new, "\"")
+	new
+}
+
 closest_match = function(x, y, tolerance = .5, max = 1.5) {
 	s = stringdist::stringdist(x, y, weight = c(d = .5, i = .7, s = 1, t = .7))
 	smin = min(s)
@@ -74,6 +89,10 @@ c4a_name_convert = function(name, no.match = c("message", "error", "null"), verb
 
 	fname = format_name(name)
 	fname2 = check_name_presence(fname, verbose)
+
+	if (is.null(fname2)) {
+		fname2 = check_renamed(c(name, fname), verbose)
+	}
 
 	if (is.null(fname2)) {
 		if (no.match == "error") {

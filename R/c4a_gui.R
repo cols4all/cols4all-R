@@ -51,12 +51,18 @@ check_installed_packages = function(packages) {
 
 h4title = function(title, inline = FALSE) shiny::HTML(paste0("<h4 style='font-weight: bold;", {if (inline) "display: inline;" else ""}, "'>", title ,"</h4>"))
 
+# Filter choices of the overview table, per palette type
+gui_filters = function(type) {
+	filters = structure(names(.filter_labels), names = unname(.filter_labels))
+	if (type == "cat") filters else filters[filters %in% c("cbf", "fair", "crW", "crB")]
+}
+
 #' @rdname c4a_gui
 #' @name c4a_gui
 #' @export
 c4a_gui = function(type = "cat", n = NA, series = "all") {
-	ani_off = shiny::icon("circle-xmark", "fa-2x fa-solid", verify_fa = FALSE)
-	ani_on = shiny::icon("circle-info", "fa-2x fa-light", verify_fa = FALSE)
+	ani_off = shiny::icon("circle-xmark", "fa-2x")
+	ani_on = shiny::icon("circle-info", "fa-2x")
 
 	if (!check_installed_packages(c("shiny", "shinyjs", "kableExtra", "colorblindcheck", "plotly"))) return(invisible(NULL))
 
@@ -120,38 +126,36 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 	init_pal_list = z$fullname[z$type == type12]
 
 
-	#############################
-	## Contrast tab
-	#############################
-
-	palette = z$fullname[1]
-
-	x = c4a_info(palette)
-
-	n_init = x$ndef
-	pal_init = unique(c(c4a(palette, n = n_init), "#ffffff", "#000000"))
-
-
-	getNames = function(p) {
-		lapply(p, function(pi) {
-			shiny::HTML(paste0("<div style='font-size:2em;line-height:0.5em;height:0.5em;color:", pi, "'>&#9632;</div>"))
-		})
+	# Book icon that shows `ref` (HTML, e.g. a citation) in a popover
+	refIcon = function(ref, title = "Reference", size = "fa-lg") {
+		shiny::tags$a(shiny::icon("book", size), tabindex = "0", role = "button", class = "ref-popover",
+					  style = "margin-left: 2px; color: inherit; cursor: pointer;", title = title,
+					  `data-toggle` = "popover", `data-trigger` = "click", `data-placement` = "bottom",
+					  `data-html` = "true", `data-content` = ref)
 	}
 
-
-
-	.C4A_HASH = new.env(FALSE, parent=environment())
-	.C4A_HASH$vals = list()
-	.C4A_HASH$tables = list()
-
-	infoBoxUI = function(inp = NULL, title) {
+	# ref: optional HTML (e.g. a citation), shown in a popover via a book icon
+	infoBoxUI = function(inp = NULL, title, ref = NULL) {
+		ref_icon = if (!is.null(ref)) refIcon(ref)
 		if (is.null(inp)) {
 			# padding to compensate for button
-			shiny::div(style="display: inline-block; padding: 5px;", h4title(title, inline = TRUE))
+			shiny::div(style="display: inline-block; padding: 5px;", h4title(title, inline = TRUE), ref_icon)
 		} else {
-			shiny::div(style="display: inline-block", h4title(title, inline = TRUE), shiny::actionButton(inp, "", ani_on, style = "border: none;"))
+			shiny::div(style="display: inline-block", h4title(title, inline = TRUE), shiny::actionButton(inp, "", ani_on, style = "border: none;"), ref_icon)
 		}
 	}
+
+	ref_szafir = paste0("The percentages are the expected share of people that can tell two lines or points of the chosen size apart, ",
+						"according to the model of:<br><br>",
+						"Szafir, D.A. (2018). Modeling Color Difference for Visualization Design. ",
+						"<i>IEEE Transactions on Visualization and Computer Graphics</i>, 24(1), 392-401. ",
+						"<a href='https://doi.org/10.1109/TVCG.2017.2744359' target='_blank'>doi:10.1109/TVCG.2017.2744359</a>")
+
+	ref_coltemp = paste0("Does your palette still work in warm light? ",
+						 "Warm light contains less blue, so under lamp or candle light colors are harder to tell apart than in daylight, ",
+						 "especially blues and light yellows. Pick a warmer setting and check which colors start to look alike.<br><br>",
+						 "<i>This is an approximation that takes into account that your eyes partly adjust to warm light. ",
+						 "Details: <code>?c4a_table</code>.</i>")
 	plotOverlay = function(outputId, width, height, id, click = NULL) {
 		shiny::div(style = paste0("position: relative; width: ", width, "; height: ", height, ";"),
 				   shiny::plotOutput(outputId = outputId, width = width, height = height, click = click),
@@ -160,7 +164,15 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 
 	ui = shiny::fluidPage(
 		shinyjs::useShinyjs(),
-		shiny::tags$script(src = "https://kit.fontawesome.com/f175d6d133.js"),
+		# reference popovers (see infoBoxUI); close when clicking elsewhere
+		shiny::tags$script(shiny::HTML("
+			$(function() {
+				$('[data-toggle=\"popover\"]').popover({container: 'body'});
+				$(document).on('click', function(e) {
+					if ($(e.target).closest('.ref-popover, .popover').length === 0) $('.ref-popover').popover('hide');
+				});
+			});
+		")),
 		shiny::tags$head(shiny::includeCSS(system.file("www/light.css", package = "cols4all"))),
 		shiny::tags$head(shiny::includeCSS(system.file("www/misc.css", package = "cols4all"))),
 		shiny::tags$div(
@@ -200,7 +212,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 					 				  	condition = "input.type1 == 'biv'",
 					 				  	shiny::fluidRow(
 					 				  		shiny::column(6,
-					 				  					  shiny::uiOutput("nbivUI")),
+					 				  					  shiny::sliderInput("nbiv", "Number of columns", min = 2, max = ifelse(type12 == "bivc", 10, 7), value = 3, ticks = FALSE)),
 					 				  		shiny::column(6,
 					 				  					  shinyjs::disabled(shiny::sliderInput("mbiv", "Number of rows", min = 3, max = 7, value = 3, ticks = FALSE))))),
 					 				  shiny::checkboxInput("na", "Color for missing values", value = FALSE),
@@ -242,7 +254,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 					 				  shiny::checkboxInput("include_tritan", "Include tritan in colorblind-friendly filter", value = FALSE),
 					 				  #shiny::div(style = "margin-bottom: 5px;", shiny::strong("Select")),
 					 				  shiny::div(class = "control-label2", "Filter"),
-					 				  shiny::uiOutput("filtersUI"),
+					 				  shiny::checkboxGroupInput("filters", label = "", choices = gui_filters(type12), inline = FALSE),
 
 					 				  shiny::div(class = "control-label2", "Palette series"),
 
@@ -258,7 +270,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 					 				  #shiny::
 					 				  ),
 					 	shiny::column(width = 3,
-					 				  shiny::radioButtons("coltemp", "Color temperature", choices = c("6500 K (D65 standard)" = "6500", '4000 K (office)' = "4000", '2700 K (home)' = "2700", '2200 K (night mode)' = "2200"), selected = "6500"),
+					 				  shiny::radioButtons("coltemp", shiny::tagList("Display temperature (approx.)", refIcon(ref_coltemp, title = "About this simulation", size = NULL)), choices = c("6500 K (standard)" = "6500", "4000 K" = "4000", "2700 K" = "2700", "2200 K (e.g. night mode)" = "2200"), selected = "6500"),
 					 				  shiny::radioButtons("cvd", "Color vision", choices = c(Normal = "none", "Black & white" = "bw", 'Deutan (red-green blind)' = "deutan", 'Protan (also red-green blind)' = "protan", 'Tritan (blue-yellow)' = "tritan"), selected = "none"),
 					 				  shiny::radioButtons("textformat", "Text", choices = c("None" = "none", "Hex" = "hex", "RGB" = "RGB", "HCL" = "HCL"), inline = T),
 					 				  shiny::div(class = "control-label3", "Underlying scores"),
@@ -270,10 +282,10 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 					 shiny::fluidRow(
 					 	shiny::column(
 					 		width = 12,
-					 		shiny::tableOutput("show"))
+					 		shiny::uiOutput("show"))
 					 )
 			),
-			shiny::tabPanel("Color Blind Friendliness",
+			shiny::tabPanel("Color Discrimination",
 							value = "tab_cvd",
 							shiny::fluidRow(
 								shiny::column(width = 12,
@@ -295,23 +307,20 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 								shiny::column(width = 6,
 											  shiny::br(),
 											  shiny::br(),
-											  infoBoxUI("infoSimi", "Separability"),
+											  infoBoxUI("infoSimi", "Separability", ref = ref_szafir),
 											  shiny::tags$div(style = "margin-top:8px; max-width:220px;",
 											  	shiny::radioButtons("cbfType", NULL, choices = c("Lines", "Points"), inline = TRUE),
 											  	shiny::tags$div(style = "margin-top:10px",
 											  	shiny::conditionalPanel(
 											  		condition = "input.cbfType == 'Lines'",
-											  		shiny::sliderInput("cbfLineSize", NULL, min = 0.05, max = 0.2, value = 0.05, step = 0.05, post = "°", ticks = TRUE)
+											  		shiny::sliderInput("cbfLineSize", NULL, min = 0.05, max = 0.2, value = 0.05, step = 0.05, post = "\u00b0", ticks = TRUE)
 											  	),
 											  	shiny::conditionalPanel(
 											  		condition = "input.cbfType == 'Points'",
-											  		# Below point_discrim_prob()'s validated 0.25deg floor on purpose:
-											  		# real scatterplot points are usually smaller than 0.25deg, and a
-											  		# draft-quality reading here is more useful than none. Below
-											  		# ~0.16deg the model's per-axis slopes go negative (see
-											  		# palette_prob_bg.R) and predictions can become non-monotonic in
-											  		# size
-											  		shiny::sliderInput("cbfPointSize", NULL, min = 0.15, max = 0.25, value = 0.15, step = 0.05, post = "°", ticks = TRUE)
+											  		# Starts at the validated 0.25deg floor of Szafir's point model: below
+											  		# ~0.16deg its a*/b* slopes go negative, so chromatic differences count
+											  		# for (almost) nothing (see palette_prob_bg.R)
+											  		shiny::sliderInput("cbfPointSize", NULL, min = 0.25, max = 0.5, value = 0.25, step = 0.05, post = "\u00b0", ticks = TRUE)
 											  	)),
 											  	shiny::checkboxInput("cbfShowNumbers", "Show percentage numbers", value = FALSE)
 											  )),
@@ -471,36 +480,9 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 											  shiny::selectizeInput("namePal", "Palette", choices = init_pal_list),
 											  infoBoxUI("infoName", "Naming table (in development)"),
 											  plotOverlay("anaName", width = "1000px", height = "600px", "aniName"))),
-							#shiny::plotOutput("namePlot", height = "600px", width = "1000px"))),
 							shiny::fluidRow(
 								shiny::column(width = 12,
-											  shiny::sliderInput("nameAlpha", "Clarity level", min = .5, max = .C4A$naming_softmax$a + 2, step = .5, value = .C4A$naming_softmax$a))),
-							#shiny::actionButton("showWeights", "Show weight calibration"))),
-							# shiny::conditionalPanel(
-							# 	condition = "input.showWeights % 2 == 1",
-							# 	shiny::fluidRow(
-							# 		shiny::column(width = 3,
-							# 				  shiny::sliderInput("w_1", "Green", min = 0, max = 1.2, step = 0.01, value = unname(.C4A$boynton_weights[1])),
-							# 				  shiny::sliderInput("w_2", "Blue", min = 0, max = 1.2, step = 0.01, value = unname(.C4A$boynton_weights[2])),
-							# 				  shiny::sliderInput("w_3", "Purple", min = 0, max = 1.2, step = 0.01, value = unname(.C4A$boynton_weights[3])),
-							# 				  shiny::sliderInput("w_4", "Pink", min = 0, max = 1.2, step = 0.01, value = unname(.C4A$boynton_weights[4]))
-							# 		),
-							# 		shiny::column(width = 3,
-							# 					  shiny::sliderInput("w_5", "Yellow", min = 0, max = 1.2, step = 0.01, value = unname(.C4A$boynton_weights[5])),
-							# 					  shiny::sliderInput("w_6", "Brown", min = 0, max = 1.2, step = 0.01, value = unname(.C4A$boynton_weights[6])),
-							# 					  shiny::sliderInput("w_7", "Orange", min = 0, max = 1.2, step = 0.01, value = unname(.C4A$boynton_weights[7])),
-							# 					  shiny::sliderInput("w_8", "Red", min = 0, max = 1.2, step = 0.01, value = unname(.C4A$boynton_weights[8]))
-							# 		),
-							# 		shiny::column(width = 3,
-							# 					  shiny::sliderInput("w_9", "White", min = 0, max = 1.2, step = 0.01, value = unname(.C4A$boynton_weights[9])),
-							# 					  shiny::sliderInput("w_10", "Gray", min = 0, max = 1.2, step = 0.01, value = unname(.C4A$boynton_weights[10])),
-							# 					  shiny::sliderInput("w_11", "Black", min = 0, max = 1.2, step = 0.01, value = unname(.C4A$boynton_weights[11])),
-							# 					  shiny::actionButton("w_do", "Update naming data")
-							# 		)
-							# 	)
-							# )
-
-			),
+											  shiny::sliderInput("nameAlpha", "Clarity level", min = .5, max = .C4A$naming_softmax$a + 2, step = .5, value = .C4A$naming_softmax$a)))),
 
 
 			shiny::tabPanel("Application",
@@ -510,7 +492,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 					shiny::column(width = 4,
 								  shiny::selectizeInput("APPPal", "Palette", choices = init_pal_list)),
 					shiny::column(width = 4,
-								  shiny::selectizeInput("APPcvd", "Color vision deficinecy", choices = c(Normal = "none", "Black & white" = "bw", 'Deutan (red-green blind)' = "deutan", 'Protan (also red-green blind)' = "protan", 'Tritan (blue-yellow)' = "tritan"), selected = "none")))),
+								  shiny::selectizeInput("APPcvd", "Color vision deficiency", choices = c(Normal = "none", "Black & white" = "bw", 'Deutan (red-green blind)' = "deutan", 'Protan (also red-green blind)' = "protan", 'Tritan (blue-yellow)' = "tritan"), selected = "none")))),
 
 					h4title("Points"),
 					shiny::fluidRow(
@@ -544,23 +526,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 										  shiny::radioButtons("TXTfface", "Font face", choices = c(Plain = "plain", Bold = "bold", Italic = "italic")))),
 
 		)
-	),
-	shiny::tags$script(
-		shiny::HTML('
-      $(document).on("shiny:connected", function() {
-        $("#showWeights").on("click", function() {
-          var currentLabel = $(this).text();
-          if (currentLabel === "Show weight calibration") {
-            $(this).text("Hide weight calibration");
-          } else {
-            $(this).text("Show weight calibration");
-          }
-        });
-      });
-    ')
-
 	)
-
 	))
 
 
@@ -598,22 +564,9 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 
 		anno = shiny::reactiveValues(simu = FALSE, hue_lines = FALSE, cvd = FALSE, simi = FALSE, psimi = FALSE, conf_lines = FALSE, hue_neck = FALSE, cl_plot = FALSE, fair_plot = FALSE, naming = FALSE, cr = FALSE, blues = FALSE)
 
-		tab_vals = shiny::reactiveValues(pal = pal_init,
-										 na = FALSE,
-										 palBW = unique(c(pal_init, "#FFFFFF", "#000000")),
-										 pal_name = palette,
-										 n = n_init,
-										 idA1 = 1L, idA2 = 2L,
-										 idB1 = 1L, idB2 = 2L,
-										 idC1 = 1L, idC2 = 2L,
-										 CR = colorspace::contrast_ratio(pal_init[1], pal_init[2]),
-										 type = type12,
-										 cvd = "none",
-										 coltemp = "6500",
-										 b = approx_blues(pal_init),
-										 r = approx_reds(pal_init))
-
-
+		# Selected palette: set by the overview table (via get_prep()) and by the palette selectors of the other tabs
+		tab_vals = shiny::reactiveValues(pal = character(0), pal_name = character(0), pals = NULL, pals_byname = NULL,
+										 n = NA, m = NA, na = FALSE, type = type12)
 
 		shiny::observeEvent(input$all, {
 			shiny::freezeReactiveValue(input, "series")
@@ -656,6 +609,12 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 			type = get_type12()
 
 			if (!(type %in% types_available)) return(NULL)
+
+			# keep the selected filters that are still available for this type
+			fltrs = gui_filters(type)
+			shiny::freezeReactiveValue(input, "filters")
+			shiny::updateCheckboxGroupInput(session, "filters", choices = fltrs, selected = intersect(shiny::isolate(input$filters), fltrs))
+
 			if (is.null(input$n)) return(NULL)
 
 			if (type %in% c("cat", "seq", "div", "cyc")) {
@@ -675,6 +634,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 					shinyjs::enable("mbiv")
 				}
 				nmin = if (type == "bivd") 3 else 2
+				nmax = if (type == "bivc") 10 else 7
 				nstep = if (type == "bivd") 2 else 1
 
 				if (is.na(mdef)) mdef = ndef
@@ -683,10 +643,9 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 
 				shiny::freezeReactiveValue(input, "nbiv")
 				shiny::freezeReactiveValue(input, "mbiv")
-				shiny::updateSliderInput(session, "nbiv", value = ndef, min = nmin, step = nstep)
+				shiny::updateSliderInput(session, "nbiv", value = ndef, min = nmin, max = nmax, step = nstep)
 				shiny::updateSliderInput(session, "mbiv", value = mdef, min = nmin, step = nstep)
 			}
-			# print("/+++++++++")
 		})
 
 
@@ -699,17 +658,12 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 
 			if (is.null(series)) return(NULL)
 			ns =  def_n(npref = input$n, type, series, tab_nmin, tab_nmax)
-			# print("-------------")
-			# print(ns)
 			if (is.null(ns)) return(NULL)
 			shiny::freezeReactiveValue(input, "n")
 			shiny::updateSliderInput(session, "n", min = ns$nmin, max = ns$nmax, value = ns$n)
-			# print("/-------------")
 		})
 
 		shiny::observeEvent(input$overview, {
-			type = get_type12()#rv$type12
-			title = paste0("Overview of palettes per series of type ", type)
 			shiny::showModal(shiny::modalDialog(title = "Number of palettes per series (rows) and type (columns)",
 												shiny::renderTable(tab_k, na = "", striped = TRUE, hover = TRUE, bordered = TRUE),
 												shiny::div(style="font-size: 75%;", shiny::renderTable(.C4A$type_info)),
@@ -717,32 +671,6 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 												style = "color: #000000;",
 												size = "l"))
 		})
-
-		output$nbivUI = shiny::renderUI({
-			type = get_type12()
-			shiny::sliderInput("nbiv", "Number of columns", min = 2, max = ifelse(type == "bivc", 10, 7), value = 3, ticks = FALSE)
-		})
-
-output$filtersUI = shiny::renderUI({
-			type = get_type12()
-			filters = c("Only n = nmax (categorical only)" = "nmax",
-						"Colorblind-friendly" = "cbf",
-						"Fair" = "fair",
-						"Good contrast ratio with white" = "crW",
-						"Good contrast ratio with black" = "crB",
-						"Nameability" = "naming")
-
-			filters_type = if (type == "cat") {
-				filters
-			} else if (type %in% c("seq", "div", "cyc", "bivc", "bivs", "bivd", "bivg")) {
-				filters[c(1, 2, 3, 4, 5)]
-			}
-
-
-			shiny::checkboxGroupInput("filters", label = "", choices = filters_type, inline = FALSE)
-
-		})
-
 
 		get_cols = shiny::reactive({
 			type = get_type12()
@@ -766,150 +694,79 @@ output$filtersUI = shiny::renderUI({
 			structure(c("name", xn[!anyD]), names = c("Name", xl[!anyD]))
 		})
 
-		get_trigger = shiny::reactiveVal(FALSE)
-
+		# All table settings, as plain values. Used as cache key for both
+		# get_prep() and output$show
 		get_values = shiny::reactive({
-			# NULL, not just "": "sort" now comes from output$sortUI
-			# (renderUI, for the type-dependent Separability/Colorblind-
-			# friendly label), so input$sort doesn't exist yet on the very
-			# first reactive flush, before that UI has rendered client-side.
 			if (is.null(input$sort) || input$sort == "") return(NULL)
 			type = get_type12()
 			n = input$n
-			if (is.null(n)) return(NULL)
-			lst = list(n = n,
-					   continuous = input$continuous,
-				 nbiv = input$nbiv,
-				 mbiv = input$mbiv,
-				 trigger = get_trigger(),
-				 type = type,
+			series = series_d()
+			if (is.null(n) || !length(series)) return(NULL)
+			isbiv = substr(type, 1, 3) == "biv"
+
+			list(type = type,
+				 n = if (isbiv) input$nbiv else n,
+				 m = if (isbiv) input$mbiv else NA,
+				 continuous = !isbiv && isTRUE(input$continuous),
 				 cvd = input$cvd,
 				 coltemp = input$coltemp,
-				 sort = input$sort,
-				 sortRev = input$sortRev,
-				 series = series_d(),
+				 sort = paste0({if (input$sortRev) "-" else ""}, input$sort),
+				 series = series,
 				 show.scores = input$advanced,
 				 include_tritan = isTRUE(input$include_tritan),
-				 columns = if (n > 16) 12 else n,
+				 columns = if (isbiv) input$nbiv else if (n > 16) 12 else n,
 				 na = input$na,
 				 range = if (input$auto_range == "Automatic") NA else input$range,
-				 #n.only = if (is.null(input$n.only) || type != "cat") FALSE else input$n.only,
 				 filters = if (is.null(input$filters)) character(0) else input$filters,
-				 #c("Hide text" = "same", Black = "#000000", White = "#FFFFFF", Automatic = "auto")
 				 textcol = if (input$textformat == "none") "same" else "auto",
 				 format = if (input$textformat == "none") "hex" else input$textformat,
 				 colorsort = if (is.null(input$sortcolor) || !(type %in% c("cat", "seq"))) "orig" else if (input$sortcolor == "H") paste0(input$sortcolor, input$Hstart) else input$sortcolor)
-
-			if (substr(type, 1, 3) == "biv") {
-				m = n
-			} else {
-				m = 1
-			}
-
-			if (is.null(lst$series)) return(NULL)
-
-			lst = within(lst, {
-				sort = paste0({if (sortRev) "-" else ""}, sort)
-				if (is.null(series)) {
-					prep = NULL
-					pal_names = NULL
-				} else {
-					if (substr(type, 1, 3) == "biv") {
-						prep = prep_table(type = type, n = nbiv, m = mbiv, sort = sort, series = series, range = range, colorsort = colorsort, show.scores = show.scores, columns = nbiv, verbose = FALSE, filters = filters, include_tritan = include_tritan)
-
-					} else {
-						prep = prep_table(type = type, n = n, continuous = continuous, sort = sort, series = series, range = range, colorsort = colorsort, show.scores = show.scores, columns = columns, verbose = FALSE, filters = filters, include_tritan = include_tritan)
-					}
-					pal_names = prep$zn$fullname
-				}
-			})
-			#
-			#
-			# sel = z$type == type &
-			# 	z$series %in% lst$series &
-			# 	lst$n <= z$nmax
-			# if (!any(sel)) {
-			# 	lst$pal_names = character(0)
-			# } else {
-			# 	lst$pal_names = z$fullname[sel]#sort(z$fullname[sel])
-			# }
-			lst
 		})
-		#get_values_d = shiny::debounce(get_values, 300)
+
+		get_prep = shiny::bindCache(shiny::reactive({
+			v = get_values()
+			if (is.null(v)) return(NULL)
+			if (substr(v$type, 1, 3) == "biv") {
+				prep_table(type = v$type, n = v$n, m = v$m, sort = v$sort, series = v$series, range = v$range, colorsort = v$colorsort, show.scores = v$show.scores, columns = v$columns, verbose = FALSE, filters = v$filters, include_tritan = v$include_tritan)
+			} else {
+				prep_table(type = v$type, n = v$n, continuous = v$continuous, sort = v$sort, series = v$series, range = v$range, colorsort = v$colorsort, show.scores = v$show.scores, columns = v$columns, verbose = FALSE, filters = v$filters, include_tritan = v$include_tritan)
+			}
+		}), get_values()[c("type", "n", "m", "continuous", "sort", "series", "range", "colorsort", "show.scores", "columns", "filters", "include_tritan")])
 
 
 		shiny::observeEvent(input$nbiv, {
 			nbiv = input$nbiv
-			type = get_type12()#rv$type12
+			type = get_type12()
 			if (type == "bivs") {
 				shiny::freezeReactiveValue(input, "mbiv")
 				shiny::updateSliderInput(session, "mbiv", value = nbiv)
 			}
 		})
 
-		# shiny::observe({
-		# 	n = input$n
-		# 	ac = input$auto_range
-		# 	type = input$type
-		#
-		# 	if (type == "cat") return(NULL)
-		# 	if (ac != "Manual") {
-		# 		shiny::freezeReactiveValue(input, "range")
-		# 		shinyjs::disable("range")
-		# 		if (ac == "Maximum") {
-		# 			rng = c(0, 1)
-		# 		} else {
-		# 			fun = paste0("default_range_", type)
-		# 			rng = do.call(fun, list(k = n))
-		# 		}
-		# 		shinyjs::disable("range")
-		# 		shiny::updateSliderInput(session, "range", value = c(rng[1], rng[2]))
-		# 	} else {
-		# 		shinyjs::enable("range")
-		# 	}
-		# })
-
 		output$sortcolorUI = shiny::renderUI({
-			#values = get_values()
 			type = get_type12()
 			if (type == "cat") {
 				shiny::tagList(
 					shiny::fluidRow(
 						shiny::column(6,
-									  shiny::radioButtons("sortcolor", "Sort colors", choices = c("Orignal" = "orig", Hue = "H", Chroma = "C", Luminance = "L"), inline = FALSE)),
+									  shiny::radioButtons("sortcolor", "Sort colors", choices = c("Original" = "orig", Hue = "H", Chroma = "C", Luminance = "L"), inline = FALSE)),
 						shiny::column(6,
 									  shiny::conditionalPanel(
 									  	condition = "input.sortcolor == 'H'",
 									  	shiny::sliderInput("Hstart", "Hue start", min = 0, max = 360, step = 10, value = 0, ticks = FALSE, dragRange = FALSE)
 									  )
 						))
-					# shiny::radioButtons("sortcolor", "Sort colors", choices = c("Orignal" = "orig", Hue = "H", Chroma = "C", Luminance = "L"), inline = FALSE),
-					# shiny::conditionalPanel(
-					# 	condition = "input.sortcolor == 'H'",
-					# 	shiny::sliderInput("Hstart", "Hue start", min = 0, max = 360, step = 10, value = 0, ticks = FALSE, dragRange = FALSE)
-					# )
 				)
 			} else if (type == "seq") {
-				shiny::radioButtons("sortcolor", "Sorting order", choices = c("Orignal" = "orig", "Light to dark" = "L"), inline = FALSE)
-			} else if (type == "div") {
-				# not working well: (because color sorting is based on whether H[25%] > H[75%] while palette sorting is based on HL, which is a by-product of Hwidth)
-				#shiny::radioButtons("sortcolor", "Sort colors", choices = c("Orignal" = "orig", Hue = "H"), inline = FALSE)
-				NULL
+				shiny::radioButtons("sortcolor", "Sorting order", choices = c("Original" = "orig", "Light to dark" = "L"), inline = FALSE)
 			} else {
+				# div: not working well (because color sorting is based on whether H[25%] > H[75%] while palette sorting is based on HL, which is a by-product of Hwidth)
 				NULL
 			}
 		})
 
-
-
-
-
-
-
 		output$range_info = shiny::renderUI({
-			#if (input$type == "div") shiny::div(style="text-align:left;", shiny::tagList("middle", shiny::span(stype = "float:right;", "each side"))) else ""
-			type = get_type12()#rv$type12
-
+			type = get_type12()
 
 			if (type == "div") {
 				shiny::HTML("<div style='font-size:70%; color:#111111; text-align:left;'>Middle<span style='float:right;'>Both sides</span></div>")
@@ -918,254 +775,172 @@ output$filtersUI = shiny::renderUI({
 			}
 		})
 
-		shiny::observe({
-			values = get_values()
-			pals = values$pal_names
-			n = values$n
-			if (length(pals)) {
-				tab_vals$pals = pals
-				tab_vals$pals_byname = sort(pals)
+		#############################
+		## Selected palette (shared by all other tabs)
+		#############################
 
-				tab_vals$n = n
-				if (!length(tab_vals$pal_name) || !(tab_vals$pal_name %in% pals)) {
-					tab_vals$pal_name = pals[1]
-				}
-				if (substr(values$type, 1, 3) == "biv") {
-					cols = as.vector(c4a(tab_vals$pal_name, n = values$nbiv, m = values$mbiv))
-				} else {
-					cols = as.vector(c4a(tab_vals$pal_name, n = n))
-				}
+		pal_inputs = c("cbfPal", "CLPal", "namePal", "contrastPal", "floatPal", "APPPal")
 
-				na = values$na
-				tab_vals$na = na
-				if (na) cols = c(cols, c4a_na(tab_vals$pal_name))
+		pal_colors = function(pal_name, n, m, na) {
+			cols = as.vector(c4a(pal_name, n = n, m = m))
+			if (na) cols = c(cols, c4a_na(pal_name))
+			cols
+		}
+
+		# Set the selected palette. The selected color pairs are only reset
+		# when the colors have changed
+		set_palette = function(pal_name, cols, type, na) {
+			changed = !identical(cols, shiny::isolate(tab_vals$pal))
+			tab_vals$pal_name = pal_name
+			tab_vals$type = type
+			tab_vals$na = na
+			if (changed) {
+				b = approx_blues(cols)
+				r = approx_reds(cols)
 				tab_vals$pal = cols
 				tab_vals$palBW = unique(c(cols, "#FFFFFF", "#000000"))
-				tab_vals$type = values$type
+				tab_vals$b = b
+				tab_vals$r = r
 				tab_vals$idA1 = 1L
 				tab_vals$idA2 = 2L
 				tab_vals$idB1 = 1L
 				tab_vals$idB2 = 2L
 				tab_vals$CR = colorspace::contrast_ratio(cols[1], cols[2])
-				tab_vals$b = approx_blues(cols)
-				tab_vals$r = approx_reds(cols)
-				tab_vals$idC1 = cols[which.max(tab_vals$b)]
-				tab_vals$idC2 = cols[which.max(tab_vals$r)]
-
-			} else {
-				tab_vals$pal = character(0)
-				tab_vals$na = logical(0)
-				tab_vals$pals = character(0)
-				tab_vals$pal_name = character(0)
-				tab_vals$n = integer(0)
-				tab_vals$palBW = character(0)
-				tab_vals$idA1 = integer(0)
-				tab_vals$idA2 = integer(0)
-				tab_vals$idB1 = integer(0)
-				tab_vals$idB2 = integer(0)
-				tab_vals$CR = numeric(0)
-				tab_vals$idC1 = integer(0)
-				tab_vals$idC2 = integer(0)
-				tab_vals$b = integer(0)
-				tab_vals$r = integer(0)
-				tab_vals$type = character(0)
+				# colors (not indices) of the 3D Blues tab
+				tab_vals$idC1 = cols[which.max(b)]
+				tab_vals$idC2 = cols[which.max(r)]
 			}
-		})
-
-		shiny::observe({
-			if (length(tab_vals$pal)) {
-				shiny::updateSelectizeInput(session, "cbfPal", choices = tab_vals$pals_byname, selected = tab_vals$pal_name)
-				shiny::updateSelectizeInput(session, "CLPal", choices = tab_vals$pals_byname, selected = tab_vals$pal_name)
-				shiny::updateSelectizeInput(session, "namePal", choices = tab_vals$pals_byname, selected = tab_vals$pal_name)
-				shiny::updateSelectizeInput(session, "contrastPal", choices = tab_vals$pals_byname, selected = tab_vals$pal_name)
-				shiny::updateSelectizeInput(session, "floatPal", choices = tab_vals$pals_byname, selected = tab_vals$pal_name)
-				shiny::updateSelectizeInput(session, "APPPal", choices = tab_vals$pals_byname, selected = tab_vals$pal_name)
-				shinyjs::enable("cbfPal")
-				shinyjs::enable("CLPal")
-				shinyjs::enable("namePal")
-				shinyjs::enable("contrastPal")
-				shinyjs::enable("floatPal")
-				shinyjs::enable("APPPal")
-			} else {
-				shiny::updateSelectizeInput(session, "cbfPal", choices = character(0))
-				shiny::updateSelectizeInput(session, "CLPal", choices = character(0))
-				shiny::updateSelectizeInput(session, "namePal", choices = character(0))
-				shiny::updateSelectizeInput(session, "contrastPal", choices = character(0))
-				shiny::updateSelectizeInput(session, "floatPal", choices = character(0))
-				shiny::updateSelectizeInput(session, "APPPal", choices = character(0))
-
-				shinyjs::disable("cbfPal")
-				shinyjs::disable("CLPal")
-				shinyjs::disable("namePal")
-				shinyjs::disable("contrastPal")
-				shinyjs::disable("floatPal")
-				shinyjs::disable("APPPal")
-			}
-
-		})
-
-		shiny::observeEvent(input$cbfPal, update_reactive(input$cbfPal, 1))
-		shiny::observeEvent(input$CLPal, update_reactive(input$CLPal, 2))
-		shiny::observeEvent(input$namePal, update_reactive(input$namePal, 3))
-		shiny::observeEvent(input$contrastPal, update_reactive(input$contrastPal, 4))
-		shiny::observeEvent(input$floatPal, update_reactive(input$floatPal, 5))
-		shiny::observeEvent(input$APPPal, update_reactive(input$APPPal, 6))
-
-		update_reactive = function(pal_name, pal_nr) {
-			pal = pal_name
-			if (pal == "") {
-				tab_vals$pal = character(0)
-				tab_vals$pal_name = character(0)
-				tab_vals$n = integer(0)
-				tab_vals$palBW = character(0)
-				tab_vals$idA1 = integer(0)
-				tab_vals$idA2 = integer(0)
-				tab_vals$idB1 = integer(0)
-				tab_vals$idB2 = integer(0)
-				tab_vals$CR = numeric(0)
-				tab_vals$idC1 = integer(0)
-				tab_vals$idC2 = integer(0)
-				tab_vals$b = integer(0)
-				tab_vals$b = integer(0)
-				tab_vals$type = character(0)
-
-			} else {
-				x = c4a_info(pal)
-
-				# tab_vals is shared across all 6 "Palette" selectors
-				# (cbfPal/CLPal/namePal/contrastPal/floatPal/APPPal) across
-				# different tabs. On first launch, before their selectize
-				# widgets have all settled, whichever one transiently fires
-				# with pal == "" first clears tab_vals to length-0 values
-				# (see the branch above) -- corrupting the shared state for
-				# the other five too, even though their own `pal` is valid.
-				# Self-heal every field this function reads below, once,
-				# here, rather than guarding each read site individually.
-				if (length(tab_vals$n) != 1 || is.na(tab_vals$n)) tab_vals$n = x$ndef
-				if (length(tab_vals$na) != 1 || is.na(tab_vals$na)) tab_vals$na = FALSE
-				if (length(tab_vals$pal_name) != 1 || is.na(tab_vals$pal_name)) tab_vals$pal_name = pal
-
-				# isTRUE(), not the bare comparison: x$nmax/x$nmin themselves
-				# (not tab_vals$n, already healed above) could still be NA in
-				# some other edge case -- same category as get_values()'s
-				# input$sort guard elsewhere in this file.
-				if (isTRUE(tab_vals$n > x$nmax) || isTRUE(tab_vals$n < x$nmin)) return(NULL)
-
-				cols = as.vector(c4a(x$fullname, n = tab_vals$n))
-				if (tab_vals$na) cols = c(cols, c4a_na(tab_vals$pal_name))
-
-				colsBW = unique(c(cols, "#FFFFFF", "#000000"))
-
-				tab_vals$pal = cols
-				tab_vals$pal_name = pal_name
-
-				tab_vals$palBW = colsBW
-
-				tab_vals$b = approx_blues(cols)
-				tab_vals$r = approx_reds(cols)
-
-				if (pal_nr == 4) {
-					# select maximum floating colors
-					tab_vals$idC1 = which.max(tab_vals$b)
-					tab_vals$idC2 = which.max(tab_vals$r)
-				} else if (pal_nr == 1) {
-					tab_vals$idA1 = 1L
-					tab_vals$idA2 = 2L
-				} else {
-					tab_vals$idB1 = 1L
-					tab_vals$idB2 = 2L
-					tab_vals$CR = colorspace::contrast_ratio(cols[1], cols[2])
-
-				}
-
-				tab_vals$type = x$type
-			}
-			if (pal_nr != 1) shiny::updateSelectizeInput(session, "cbfPal", choices = tab_vals$pals_byname, selected = pal)
-			if (pal_nr != 2) shiny::updateSelectizeInput(session, "CLPal", choices = tab_vals$pals_byname, selected = pal)
-			if (pal_nr != 3) shiny::updateSelectizeInput(session, "namePal", choices = tab_vals$pals_byname, selected = pal)
-			if (pal_nr != 4) shiny::updateSelectizeInput(session, "contrastPal", choices = tab_vals$pals_byname, selected = pal)
-			if (pal_nr != 5) shiny::updateSelectizeInput(session, "floatPal", choices = tab_vals$pals_byname, selected = pal)
-			if (pal_nr != 6) shiny::updateSelectizeInput(session, "APPPal", choices = tab_vals$pals_byname, selected = pal)
-
 		}
 
+		clear_palette = function() {
+			tab_vals$pal = character(0)
+			tab_vals$na = FALSE
+			tab_vals$pals = character(0)
+			tab_vals$pals_byname = character(0)
+			tab_vals$pal_name = character(0)
+			tab_vals$palBW = character(0)
+			tab_vals$idA1 = integer(0)
+			tab_vals$idA2 = integer(0)
+			tab_vals$idB1 = integer(0)
+			tab_vals$idB2 = integer(0)
+			tab_vals$CR = numeric(0)
+			tab_vals$idC1 = character(0)
+			tab_vals$idC2 = character(0)
+			tab_vals$b = numeric(0)
+			tab_vals$r = numeric(0)
+			tab_vals$type = character(0)
+		}
 
+		# Overview tab -> selected palette
+		shiny::observe({
+			values = get_values()
+			prep = get_prep()
+			pals = prep$zn$fullname
 
-		output$show = function() {
-			values = get_values()#_d()
-			if (is.null(values) || is.null(values$series)) {
-				tab = NULL
-			} else {
+			shiny::isolate({
+				if (!is.null(values) && length(pals)) {
+					tab_vals$pals = pals
+					tab_vals$pals_byname = sort(pals)
+					tab_vals$n = values$n
+					tab_vals$m = values$m
 
-				if (length(.C4A_HASH$vals)) {
-					iden = vapply(.C4A_HASH$vals, function(cv) {
-						identical(cv, values)
-					}, FUN.VALUE = logical(1))
-					if (any(iden)) {
-						return(.C4A_HASH$tables[[which(iden)[1]]])
-					}
+					pal_name = tab_vals$pal_name
+					if (!length(pal_name) || !(pal_name %in% pals)) pal_name = pals[1]
+
+					set_palette(pal_name, pal_colors(pal_name, values$n, values$m, values$na), values$type, values$na)
+				} else {
+					clear_palette()
 				}
+			})
+		})
 
+		# Palette choices of the other tabs
+		shiny::observe({
+			choices = tab_vals$pals_byname
+			if (is.null(choices)) return(NULL)
+			sel = shiny::isolate(tab_vals$pal_name)
+			for (id in pal_inputs) {
+				if (length(choices)) {
+					shiny::updateSelectizeInput(session, id, choices = choices, selected = sel)
+					shinyjs::enable(id)
+				} else {
+					shiny::updateSelectizeInput(session, id, choices = character(0))
+					shinyjs::disable(id)
+				}
+			}
+		})
 
+		# Selected palette in the other tabs
+		shiny::observeEvent(tab_vals$pal_name, {
+			sel = tab_vals$pal_name
+			if (!length(sel)) return(NULL)
+			for (id in pal_inputs) shiny::updateSelectizeInput(session, id, selected = sel)
+		})
 
-				# Create a Progress object
-				progress <- shiny::Progress$new()
-				# Make sure it closes when we exit this reactive, even if there's an error
+		# Other tabs -> selected palette
+		update_reactive = function(pal) {
+			if (is.null(pal) || pal == "" || identical(pal, tab_vals$pal_name)) return(NULL)
+
+			x = c4a_info(pal)
+			n = tab_vals$n
+			m = tab_vals$m
+			if (length(n) != 1 || is.na(n)) n = x$ndef
+			if (length(m) != 1) m = NA
+			if (is.na(m) && (isTRUE(n > x$nmax) || isTRUE(n < x$nmin))) return(NULL)
+
+			na = isTRUE(tab_vals$na)
+			set_palette(pal, pal_colors(pal, n, m, na), x$type, na)
+		}
+
+		lapply(pal_inputs, function(id) {
+			shiny::observeEvent(input[[id]], update_reactive(input[[id]]))
+		})
+
+		output$show = shiny::bindCache(shiny::renderUI({
+			values = get_values()
+			prep = get_prep()
+			tab = if (is.null(values) || is.null(prep)) {
+				NULL
+			} else {
+				progress = shiny::Progress$new()
 				on.exit(progress$close())
-
 				progress$set(message = "Colors in progress...", value = 0)
-
-
-				tab = if (is.null(values$prep)) NULL
-				else plot_table(p = values$prep, text.format = values$format, text.col = values$textcol, include.na = values$na, cvd.sim = values$cvd, coltemp = values$coltemp, verbose = FALSE)
+				plot_table(p = prep, text.format = values$format, text.col = values$textcol, include.na = values$na, cvd.sim = values$cvd, coltemp = values$coltemp, verbose = FALSE)
 			}
 			if (is.null(tab)) {
-				kableExtra::kbl(data.frame("No palettes found. Please change the selection."), col.names = " ")
-			} else {
-				.C4A_HASH$vals = c(.C4A_HASH$vals, list(values))
-				#str(.C4A_HASH$vals)
-				.C4A_HASH$tables = c(.C4A_HASH$tables, tab)
-				tab
+				ex = if (is.null(values)) {
+					list(title = "No palette series selected.", details = "Select one or more palette series.")
+				} else {
+					explain_no_palettes(type = values$type, n = values$n, m = values$m, series = values$series, filters = values$filters, include_tritan = values$include_tritan)
+				}
+				return(shiny::div(class = "no-palettes", style = "margin: 20px 0; font-size: 14px;",
+								  shiny::tags$b(ex$title),
+								  if (length(ex$details)) shiny::tags$ul(style = "margin-top: 8px;", lapply(ex$details, shiny::tags$li))))
 			}
-		}
+			shiny::HTML(tab)
+		}), get_values())
 
 		#############################
 		## CBF tab
 		#############################
 
+		cvds = c("deutan", "protan", "tritan")
+
 		output$cbfSimu = shiny::renderPlot({
 			if (!length(tab_vals$pal)) return(NULL)
-
-			pal = tab_vals$pal
-			c4a_plot_cvd(pal, dark = input$dark, include.na = tab_vals$na)
+			c4a_plot_cvd(tab_vals$pal, dark = input$dark, include.na = tab_vals$na)
 		})
 
 		output$cbfHL = shiny::renderPlot({
 			if (!length(tab_vals$pal)) return(NULL)
-
-			pal = tab_vals$pal
-			c4a_plot_confusion_lines(pal, cvd = "none", dark = input$dark)
+			c4a_plot_confusion_lines(tab_vals$pal, cvd = "none", dark = input$dark)
 		})
 
-		output$cbfCL1 = shiny::renderPlot({
-			if (!length(tab_vals$pal)) return(NULL)
-
-			pal = tab_vals$pal
-			c4a_plot_confusion_lines(pal, cvd = "deutan", dark = input$dark)
-		})
-
-		output$cbfCL2 = shiny::renderPlot({
-			if (!length(tab_vals$pal)) return(NULL)
-
-			pal = tab_vals$pal
-			c4a_plot_confusion_lines(pal, cvd = "protan", dark = input$dark)
-		})
-
-		output$cbfCL3 = shiny::renderPlot({
-			if (!length(tab_vals$pal)) return(NULL)
-
-			pal = tab_vals$pal
-			c4a_plot_confusion_lines(pal, cvd = "tritan", dark = input$dark)
+		lapply(1:3, function(i) {
+			output[[paste0("cbfCL", i)]] = shiny::renderPlot({
+				if (!length(tab_vals$pal)) return(NULL)
+				c4a_plot_confusion_lines(tab_vals$pal, cvd = cvds[i], dark = input$dark)
+			})
 		})
 
 		# Separate sliders per chart type (cbfLineSize / cbfPointSize), since
@@ -1181,44 +956,29 @@ output$filtersUI = shiny::renderUI({
 			if (input$cbfType == "Points") input$cbfPointSize else input$cbfLineSize
 		})
 
-		output$cbfSimi = shiny::renderPlot({
-			if (!length(tab_vals$pal)) return(NULL)
-
+		# Probability matrices, computed apart from the plots so that
+		# selecting a color pair (click) only redraws them
+		prob_matrices = shiny::reactive({
 			pal = tab_vals$pal
-			id1 = tab_vals$idA1
-			id2 = tab_vals$idA2
-
-			c4a_plot_dist_matrix(pal, cvd = "none", id1 = id1, id2 = id2, dark = input$dark, show_numbers = input$cbfShowNumbers, bc_adj = FALSE, thickness = cbf_thickness(), mark = cbf_mark())
+			if (!length(pal)) return(NULL)
+			thickness = cbf_thickness()
+			mark = cbf_mark()
+			sapply(c("none", cvds), function(cvd) {
+				get_prob_matrix(pal, cvd = cvd, whole_matrix = TRUE, thickness = thickness, mark = mark)
+			}, simplify = FALSE)
 		})
 
-		output$cbfPSimi1 = shiny::renderPlot({
-			if (!length(tab_vals$pal)) return(NULL)
+		render_dist_matrix = function(cvd) {
+			shiny::renderPlot({
+				ms = prob_matrices()
+				if (is.null(ms)) return(NULL)
+				c4a_plot_dist_matrix(tab_vals$pal, cvd = cvd, id1 = tab_vals$idA1, id2 = tab_vals$idA2, dark = input$dark, show_numbers = input$cbfShowNumbers, bc_adj = FALSE, m = ms[[cvd]])
+			})
+		}
 
-			pal = tab_vals$pal
-			id1 = tab_vals$idA1
-			id2 = tab_vals$idA2
-
-			c4a_plot_dist_matrix(pal, cvd = "deutan", id1 = id1, id2 = id2, dark = input$dark, show_numbers = input$cbfShowNumbers, bc_adj = FALSE, thickness = cbf_thickness(), mark = cbf_mark())
-		})
-
-		output$cbfPSimi2 = shiny::renderPlot({
-			if (!length(tab_vals$pal)) return(NULL)
-
-			pal = tab_vals$pal
-			id1 = tab_vals$idA1
-			id2 = tab_vals$idA2
-
-			c4a_plot_dist_matrix(pal, cvd = "protan", id1 = id1, id2 = id2, dark = input$dark, show_numbers = input$cbfShowNumbers, bc_adj = FALSE, thickness = cbf_thickness(), mark = cbf_mark())
-		})
-
-		output$cbfPSimi3 = shiny::renderPlot({
-			if (!length(tab_vals$pal)) return(NULL)
-
-			pal = tab_vals$pal
-			id1 = tab_vals$idA1
-			id2 = tab_vals$idA2
-
-			c4a_plot_dist_matrix(pal, cvd = "tritan", id1 = id1, id2 = id2, dark = input$dark, show_numbers = input$cbfShowNumbers, bc_adj = FALSE, thickness = cbf_thickness(), mark = cbf_mark())
+		output$cbfSimi = render_dist_matrix("none")
+		lapply(1:3, function(i) {
+			output[[paste0("cbfPSimi", i)]] = render_dist_matrix(cvds[i])
 		})
 
 		# Screen calibration (see calibViewDist/calibRefLen in the UI, and the
@@ -1246,18 +1006,12 @@ output$filtersUI = shiny::renderUI({
 		}
 
 		cbf_lines = function(cols, cvd) {
-			if (!length(cols)) return(NULL)
-
-			hcl = get_hcl_matrix(cols)
-
 			cols_cvd = sim_cvd(cols, cvd)
 			lwd = cbf_px_per_deg(cbf_thickness())
-			c4a_plot_lines(cols = c(cols_cvd[1], col2 = cols_cvd[2]), lwd = lwd, asp = .9, dark = input$dark)
+			c4a_plot_lines(cols = cols_cvd[1:2], lwd = lwd, asp = .9, dark = input$dark)
 		}
 
 		cbf_points = function(cols, cvd) {
-			if (!length(cols)) return(NULL)
-
 			cols_cvd = sim_cvd(cols, cvd)
 			# Point diameter -> grid "char" size is just a rough visual proxy
 			# (same px conversion as cbf_lines()'s lwd, rescaled), unlike the
@@ -1267,27 +1021,13 @@ output$filtersUI = shiny::renderUI({
 			c4a_plot_scatter(cols = cols_cvd, size = size, lwd = 0, dark = input$dark)
 		}
 
-
-
-		output$cbf_ex1 = shiny::renderPlot({
-			if (!length(tab_vals$idA1)) return(NULL)
-			fun = paste0("cbf_", tolower(input$cbfType))
-			do.call(fun, list(cols = tab_vals$pal[c(tab_vals$idA1, tab_vals$idA2)], cvd = "none"))
-		})
-		output$cbf_ex2 = shiny::renderPlot({
-			if (!length(tab_vals$idA1)) return(NULL)
-			fun = paste0("cbf_", tolower(input$cbfType))
-			do.call(fun, list(cols = tab_vals$pal[c(tab_vals$idA1, tab_vals$idA2)], cvd = "deutan"))
-		})
-		output$cbf_ex3 = shiny::renderPlot({
-			if (!length(tab_vals$idA1)) return(NULL)
-			fun = paste0("cbf_", tolower(input$cbfType))
-			do.call(fun, list(cols = tab_vals$pal[c(tab_vals$idA1, tab_vals$idA2)], cvd = "protan"))
-		})
-		output$cbf_ex4 = shiny::renderPlot({
-			if (!length(tab_vals$idA1)) return(NULL)
-			fun = paste0("cbf_", tolower(input$cbfType))
-			do.call(fun, list(cols = tab_vals$pal[c(tab_vals$idA1, tab_vals$idA2)], cvd = "tritan"))
+		lapply(1:4, function(i) {
+			output[[paste0("cbf_ex", i)]] = shiny::renderPlot({
+				if (!length(tab_vals$idA1)) return(NULL)
+				cols = tab_vals$pal[c(tab_vals$idA1, tab_vals$idA2)]
+				cvd = c("none", cvds)[i]
+				if (input$cbfType == "Points") cbf_points(cols, cvd) else cbf_lines(cols, cvd)
+			})
 		})
 
 		get_click_id = function(pal, x, y) {
@@ -1305,45 +1045,16 @@ output$filtersUI = shiny::renderUI({
 			list(x = x_id, y = y_id)
 		}
 
-		shiny::observeEvent(input$cbfSimi_click, {
-			pal = tab_vals$pal
-			if (!length(pal)) return(NULL)
+		lapply(c("cbfSimi_click", paste0("cbfPSimi", 1:3, "_click")), function(id) {
+			shiny::observeEvent(input[[id]], {
+				pal = tab_vals$pal
+				if (!length(pal)) return(NULL)
 
-			ids = get_click_id(pal, input$cbfSimi_click$x, input$cbfSimi_click$y)
+				ids = get_click_id(pal, input[[id]]$x, input[[id]]$y)
 
-			if (!is.na(ids$x)) tab_vals$idA2 = ids$x
-			if (!is.na(ids$y)) tab_vals$idA1 = ids$y
-		})
-
-		shiny::observeEvent(input$cbfPSimi1_click, {
-			pal = tab_vals$pal
-			if (!length(pal)) return(NULL)
-
-			ids = get_click_id(pal, input$cbfPSimi1_click$x, input$cbfPSimi1_click$y)
-
-			if (!is.na(ids$x)) tab_vals$idA2 = ids$x
-			if (!is.na(ids$y)) tab_vals$idA1 = ids$y
-
-		})
-
-		shiny::observeEvent(input$cbfPSimi2_click, {
-			pal = tab_vals$pal
-			if (!length(pal)) return(NULL)
-
-			ids = get_click_id(pal, input$cbfPSimi2_click$x, input$cbfPSimi2_click$y)
-
-			if (!is.na(ids$x)) tab_vals$idA2 = ids$x
-			if (!is.na(ids$y)) tab_vals$idA1 = ids$y
-		})
-
-		shiny::observeEvent(input$cbfPSimi3_click, {
-			pal = tab_vals$pal
-			if (!length(pal)) return(NULL)
-
-			ids = get_click_id(pal, input$cbfPSimi3_click$x, input$cbfPSimi3_click$y)
-
-			if (!is.na(ids$x)) tab_vals$idA2 = ids$x
-			if (!is.na(ids$y)) tab_vals$idA1 = ids$y
+				if (!is.na(ids$x)) tab_vals$idA2 = ids$x
+				if (!is.na(ids$y)) tab_vals$idA1 = ids$y
+			})
 		})
 
 
@@ -1410,9 +1121,7 @@ output$filtersUI = shiny::renderUI({
 
 			if (!length(pal)) return(NULL)
 
-			type = tab_vals$type
-
-			c4a_plot_CL(pal, Lrange = (type == type), dark = input$dark)
+			c4a_plot_CL(pal, Lrange = TRUE, dark = input$dark)
 		})
 
 		output$anaFair = shiny::renderPlot({
@@ -1474,12 +1183,14 @@ output$filtersUI = shiny::renderUI({
 			id1 = tab_vals$idB1
 			id2 = tab_vals$idB2
 			pal = tab_vals$palBW
+			if (!length(pal)) return(NULL)
 
 			c4a_plot_CR_matrix(pal, id1 = id1, id2 = id2, dark = input$dark)
 		})
 
 		output$cr_plot = shiny::renderPlot({
 			pal = tab_vals$pal
+			if (!length(pal)) return(NULL)
 			opts = input$cr_plot_opts
 			c4a_plot_CR(pal, dark = input$dark, sort =  ("sort" %in% opts), lines_WCAG = ("wcag" %in% opts), lines_equiluminance = ("equi" %in% opts))
 		})
@@ -1535,31 +1246,11 @@ output$filtersUI = shiny::renderUI({
 		## Naming tab
 		#############################
 
-		# shiny::observeEvent(input$w_do, {
-		# 	shinyjs::runjs("$('#container').prop('disabled', true);")
-		#
-		# 	w = c4a_options("boynton_weights")[[1]]
-		# 	w[1:11] = vapply(1:11, function(i) {
-		# 		input[[paste0("w_", i)]]
-		# 	}, FUN.VALUE = numeric(1))
-		# 	c4a_options(boynton_weights = w)
-		# 	updatePlot(w)
-		# 	get_trigger(!get_trigger()) # to update table
-		# 	shinyjs::runjs("$('#container').prop('disabled', false);")
-		#
-		# })
-
 		output$anaName = shiny::renderPlot({
 			pal = tab_vals$pal
+			if (!length(pal)) return(NULL)
 			c4a_plot_names(pal, dark = input$dark, a = input$nameAlpha)
 		})
-
-		updatePlot <- function(result) {
-			output$anaName = shiny::renderPlot({
-				pal = tab_vals$pal
-				c4a_plot_names(pal, dark = input$dark, a = input$nameAlpha)
-			})
-		}
 
 
 		##############################
@@ -1690,11 +1381,9 @@ output$filtersUI = shiny::renderUI({
 
 
 		##############################
-		## Application tab
+		## Info animations
 		##############################
 
-
-		#observeEvent(input$infoHueLines, infoBoxDialog("Hue Lines", "markdown/infoHueLines.md"))
 
 		oE = function(i, a, id, gif) {
 			shiny::observeEvent(input[[i]], {
@@ -1713,7 +1402,7 @@ output$filtersUI = shiny::renderUI({
 							g = gif[j]
 						}
 						gs = paste(paste0("imgResources/", g, 1:2,"x.gif ", 1:2, "x"), collapse = ", ")
-						g1 = paste0("imgResources/", g, "x1.gif")
+						g1 = paste0("imgResources/", g, "1x.gif")
 						shinyjs::removeClass(id = d, class = "hide")
 						shinyjs::runjs(paste0("
 							var logo = document.getElementById('", d, "');

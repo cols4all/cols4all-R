@@ -1,114 +1,35 @@
-kelvin_table <- list(
-	`2000` = c(255, 138, 18),
-	`2100` = c(255, 142, 33),
-	`2200` = c(255, 147, 44),
-	`2300` = c(255, 152, 54),
-	`2400` = c(255, 157, 63),
-	`2500` = c(255, 161, 72),
-	`2600` = c(255, 165, 79),
-	`2700` = c(255, 169, 87),
-	`2800` = c(255, 173, 94),
-	`2900` = c(255, 177, 101),
-	`3000` = c(255, 180, 107),
-	`3100` = c(255, 184, 114),
-	`3200` = c(255, 187, 120),
-	`3300` = c(255, 190, 126),
-	`3400` = c(255, 193, 132),
-	`3500` = c(255, 196, 137),
-	`3600` = c(255, 199, 143),
-	`3700` = c(255, 201, 148),
-	`3800` = c(255, 204, 153),
-	`3900` = c(255, 206, 159),
-	`4000` = c(255, 209, 163),
-	`4100` = c(255, 211, 168),
-	`4200` = c(255, 213, 173),
-	`4300` = c(255, 215, 177),
-	`4400` = c(255, 217, 182),
-	`4500` = c(255, 219, 186),
-	`4600` = c(255, 221, 190),
-	`4700` = c(255, 223, 194),
-	`4800` = c(255, 225, 198),
-	`4900` = c(255, 227, 202),
-	`5000` = c(255, 228, 206),
-	`5100` = c(255, 230, 210),
-	`5200` = c(255, 232, 213),
-	`5300` = c(255, 233, 217),
-	`5400` = c(255, 235, 220),
-	`5500` = c(255, 236, 224),
-	`5600` = c(255, 238, 227),
-	`5700` = c(255, 239, 230),
-	`5800` = c(255, 240, 233),
-	`5900` = c(255, 242, 236),
-	`6000` = c(255, 243, 239),
-	`6100` = c(255, 244, 242),
-	`6200` = c(255, 245, 245),
-	`6300` = c(255, 246, 247),
-	`6400` = c(255, 248, 251),
-	`6500` = c(255, 249, 253),
-	`6600` = c(254, 249, 255),
-	`6700` = c(252, 247, 255),
-	`6800` = c(249, 246, 255),
-	`6900` = c(247, 245, 255),
-	`7000` = c(245, 243, 255),
-	`7100` = c(243, 242, 255),
-	`7200` = c(240, 241, 255),
-	`7300` = c(239, 240, 255),
-	`7400` = c(237, 239, 255),
-	`7500` = c(235, 238, 255),
-	`7600` = c(233, 237, 255),
-	`7700` = c(231, 236, 255),
-	`7800` = c(230, 235, 255),
-	`7900` = c(228, 234, 255),
-	`8000` = c(227, 233, 255),
-	`8100` = c(225, 232, 255),
-	`8200` = c(224, 231, 255),
-	`8300` = c(222, 230, 255),
-	`8400` = c(221, 230, 255),
-	`8500` = c(220, 229, 255),
-	`8600` = c(218, 229, 255),
-	`8700` = c(217, 227, 255),
-	`8800` = c(216, 227, 255),
-	`8900` = c(215, 226, 255),
-	`9000` = c(214, 225, 255),
-	`9100` = c(212, 225, 255),
-	`9200` = c(211, 224, 255),
-	`9300` = c(210, 223, 255),
-	`9400` = c(209, 223, 255),
-	`9500` = c(208, 222, 255),
-	`9600` = c(207, 221, 255),
-	`9700` = c(207, 221, 255),
-	`9800` = c(206, 220, 255),
-	`9900` = c(205, 220, 255),
-	`10000` = c(207, 218, 255),
-	`10100` = c(207, 218, 255),
-	`10200` = c(206, 217, 255),
-	`10300` = c(205, 217, 255),
-	`10400` = c(204, 216, 255),
-	`10500` = c(204, 216, 255),
-	`10600` = c(203, 215, 255),
-	`10700` = c(202, 215, 255),
-	`10800` = c(202, 214, 255),
-	`10900` = c(201, 214, 255),
-	`11000` = c(200, 213, 255),
-	`11100` = c(200, 213, 255),
-	`11200` = c(199, 212, 255),
-	`11300` = c(198, 212, 255),
-	`11400` = c(198, 212, 255),
-	`11500` = c(197, 211, 255),
-	`11600` = c(197, 211, 255),
-	`11700` = c(197, 210, 255),
-	`11800` = c(196, 210, 255),
-	`11900` = c(195, 210, 255),
-	`12000` = c(195, 209, 255)
-)
+# Display color temperature simulation (c4a_gui() and c4a_table())
+#
+# A display set to a warmer white point (e.g. night mode) physically emits
+# much warmer light than viewers perceive: they partly adapt to the new white.
+# Instead of the physical shift, colors are mapped such that white becomes the
+# page background color of the GUI for that setting (body.temp-XXXX in
+# inst/www/light.css), which approximates the perceived (partly adapted) white.
+# Other colors follow via a von Kries transform in Bradford cone space, so the
+# palette colors and the page background are consistent.
 
+# Perceived white per display color temperature; keep in sync with inst/www/light.css
+.coltemp_white = c(`6500` = "#FFFFFF",
+				   `4000` = "#F4F1EA",
+				   `2700` = "#F3E6D3",
+				   `2200` = "#ECD6B3")
 
-apply_kelvin_filter <- function(cols, kelvin, table, ref = 6500) {
-	f  <- table[[as.character(kelvin)]] / 255
-	f0 <- table[[as.character(ref)]]    / 255
-	scale <- f / f0
-	rgb <- colorspace::coords(colorspace::hex2RGB(cols))
-	rgb_out <- pmin(rgb * rep(scale, each = nrow(rgb)), 1)
-	hex(colorspace::sRGB(rgb_out))
+.bradford = matrix(c( 0.8951,  0.2664, -0.1614,
+					 -0.7502,  1.7135,  0.0367,
+					  0.0389, -0.0685,  1.0296), nrow = 3, byrow = TRUE)
+
+sim_coltemp = function(cols, coltemp = "6500") {
+	coltemp = as.character(coltemp)
+	if (!(coltemp %in% names(.coltemp_white))) stop("color temperature should be one of ", paste(names(.coltemp_white), collapse = ", "), call. = FALSE)
+	if (coltemp == "6500") return(cols)
+
+	to_xyz = function(x) colorspace::coords(as(colorspace::hex2RGB(x), "XYZ"))
+
+	# von Kries in Bradford cone space: from display white to perceived white
+	gains = (.bradford %*% to_xyz(.coltemp_white[coltemp])[1, ]) / (.bradford %*% to_xyz("#FFFFFF")[1, ])
+	M = solve(.bradford) %*% diag(as.vector(gains)) %*% .bradford
+
+	xyz = to_xyz(cols) %*% t(M)
+	rgb = colorspace::coords(as(colorspace::XYZ(xyz), "RGB"))
+	colorspace::hex(colorspace::RGB(pmin(pmax(rgb, 0), 1)))
 }
-

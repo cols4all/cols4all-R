@@ -6,13 +6,13 @@ library(gifski)
 # download.file("http://simonsoftware.se/other/xkcd.ttf", dest="xkcd.ttf", mode="wb")
 # font_add("xkcd", "~/xkcd.ttf")
 
-options(shiny.launch.browser = .rs.invokeShinyWindowExternal)
+if (exists(".rs.invokeShinyWindowExternal")) options(shiny.launch.browser = .rs.invokeShinyWindowExternal)
 
 
 grid.t = function(text, x, y, scale = 1, bg = TRUE, r = 0.5, just = "center") {
-	nlines = length(strsplit(text, "\n", fixed = TRUE)[[1]])
-	if (bg) grid.roundrect(x = x, y = y, just = just, width = scale * (convertWidth(stringWidth(text), unitTo = "npc") + unit(3, "lines")), height = scale * (unit(nlines+max(0,(nlines-1)*0.5),"lines")), r = unit(r, "npc"), gp=gpar(col=NA, fill = "white"))
-	grid.text(text, x = x, y = y, just = just, gp = gpar(cex = 1.2 * scale, fontfamily = "xkcd", fontface = "bold"))
+	tg = textGrob(text, x = x, y = y, just = just, gp = gpar(cex = 1.2 * scale, fontfamily = "xkcd", fontface = "bold"))
+	if (bg) grid.roundrect(x = x, y = y, just = just, width = grobWidth(tg) + unit(2 * scale, "lines"), height = grobHeight(tg) + unit(scale, "lines"), r = unit(r, "npc"), gp=gpar(col=NA, fill = "white"))
+	grid.draw(tg)
 }
 
 
@@ -112,43 +112,47 @@ for (scale in 1:2) {
 #### dist matrix #################
 ################################
 
+# Overlays for c4a_plot_dist_matrix(): percentage of viewers that can tell two
+# colors apart, according to the Szafir (2018) model
+
+simi_frames = function(i, scale, who = NULL) {
+	if (i >= 1) {
+		grid.t("Color 1", x = 0.05, y = 0.92, scale)
+		grid.t("Color 2", x = 0.1, y = 0.97, scale)
+		grid.lines(x = c(0.05, 0.05), y = c(0.9, 0.82), arrow = arrow(length = unit(0.015, "npc")), gp = gpar(lwd = 2 * scale))
+		grid.lines(x = c(0.15, 0.2), y = c(0.97, 0.97), arrow = arrow(length = unit(0.015, "npc")), gp = gpar(lwd = 2 * scale))
+	}
+	if (i >= 2) {
+		txt = if (is.null(who)) {
+			"How many people can tell\nthese 2 colors apart?\n- click to select other colors -"
+		} else {
+			paste0("How many color blind people\n- ", who, " - can tell\nthese 2 colors apart?")
+		}
+		grid.t(txt, 0.73, 0.55, scale, r = 0.2)
+		grid.circle(x = 0.45, y = 0.55, r = 0.06, gp = gpar(fill = "#FFFFFF", lwd = 3 * scale))
+		grid.t("?", 0.45, 0.55, scale * 1.5, bg = FALSE)
+		grid.lines(x = c(0.16, 0.39), y = c(0.55, 0.55), gp = gpar(lwd = 3 * scale))
+		grid.lines(x = c(0.45, 0.45), y = c(0.64, 0.82), gp = gpar(lwd = 3 * scale))
+	}
+	if (i >= 3) {
+		grid.t("Symbol = hard to tell apart\n- the bigger, the harder -", 0.7, 0.36, scale, r = 0.3)
+		grid.curve(x1 = 0.88, x2 = 0.94, y1 = 0.39, y2 = 0.7, gp = gpar(lwd = 3 * scale), arrow = arrow(length = unit(0.02, "npc")))
+	}
+	if (i >= 4) {
+		grid.t("No symbol = easy to tell apart\n- at least 99 percent of the people -", 0.7, 0.22, scale, r = 0.3)
+	}
+}
+
 for (scale in 1:2) {
 	unlink("temp", recursive = T, force = T)
 	dir.create("temp")
-	for (i in 1:6) {
+	for (i in 1:5) {
 		png(paste0("temp/dist", i, ".png"), width = 500 * scale, height = 375 * scale, bg = "transparent")
 		#c4a_plot_dist_matrix(c4a("brewer.accent", 7))
-		if (i >= 1) {
-			grid.t("Color 1", x = 0.05, y = 0.92, scale)
-			grid.t("Color 2", x = 0.1, y = 0.97, scale)
-			grid.lines(x = c(0.05, 0.05), y = c(0.9, 0.82), arrow = arrow(length = unit(0.015, "npc")), gp = gpar(lwd = 2 * scale))
-			grid.lines(x = c(0.15, 0.2), y = c(0.97, 0.97), arrow = arrow(length = unit(0.015, "npc")), gp = gpar(lwd = 2 * scale))
-		}
-		if (i >= 2) {
-			grid.t("How similiar are these 2 colors?\n- click to select other colors-", 0.7, 0.55, scale)
-			grid.circle(x = 0.45, y = 0.55, r = 0.06, gp = gpar(fill = "#FFFFFF", lwd = 3 * scale))
-			grid.t("?", 0.45, 0.55, scale * 1.5, bg = FALSE)
-			grid.lines(x = c(0.16, 0.39), y = c(0.55, 0.55), gp = gpar(lwd = 3 * scale))
-			grid.lines(x = c(0.45, 0.45), y = c(0.64, 0.82), gp = gpar(lwd = 3 * scale))
-			#grid.lines(x = c(0.56, 0.355), y = c(0.88, 0.49), gp = gpar(lwd = 3, lty = "dotted"))
-		}
-
-		if (i >= 3) {
-			grid.t("Symbol = similar", 0.7, 0.4, scale)
-			grid.curve(x1 = 0.8, x2 = 0.94, y1 = 0.4, y2 = 0.7, gp = gpar(lwd = 3 * scale), arrow = arrow(length = unit(0.02, "npc")))
-		}
-		if (i >= 4) {
-			grid.t("No symbol = not similar,\ntherefore easy to distinguish", 0.7, 0.3, scale)
-		}
+		simi_frames(i, scale)
 		if (i >= 5) {
-			grid.t("At least, for people with normal color vision !", 0.55, 0.14, scale)
+			grid.t("Model by Szafir, 2018, for lines or points of\nthe chosen size. See below for color blind people", 0.6, 0.07, scale, r = 0.3)
 		}
-		if (i >= 6) {
-			grid.t("See below how 'easy' this is for color blind people...", 0.6, 0.08, scale)
-		}
-
-
-
 		dev.off()
 	}
 	gifski::gifski(png_files = list.files(path = "temp", full.names = TRUE), width = 500 * scale, height = 375 * scale, delay = 1.5, gif_file = paste0("inst/img/simi", scale, "x.gif"), loop = FALSE)
@@ -166,32 +170,8 @@ for (scale in 1:2) {
 		dir.create("temp")
 		for (i in 1:4) {
 			png(paste0("temp/dist", i, ".png"), width = 500 * scale, height = 375 * scale, bg = "transparent")
-			#c4a_plot_dist_matrix(c4a("brewer.accent", 7))
-			if (i >= 1) {
-				grid.t("Color 1", x = 0.05, y = 0.92, scale)
-				grid.t("Color 2", x = 0.1, y = 0.97, scale)
-				grid.lines(x = c(0.05, 0.05), y = c(0.9, 0.82), arrow = arrow(length = unit(0.015, "npc")), gp = gpar(lwd = 2 * scale))
-				grid.lines(x = c(0.15, 0.2), y = c(0.97, 0.97), arrow = arrow(length = unit(0.015, "npc")), gp = gpar(lwd = 2 * scale))
-			}
-			if (i >= 2) {
-				grid.t(paste0("How similiar are these 2 colors\n accoriding to\ncolor blind people - ", switch(X, D="deutans", P="protans", T="tritans"), " - ?"), 0.7, 0.55, scale)
-				grid.circle(x = 0.45, y = 0.55, r = 0.06, gp = gpar(fill = "#FFFFFF", lwd = 3 * scale))
-				grid.t("?", 0.45, 0.55, scale * 1.5, bg = FALSE)
-				grid.lines(x = c(0.16, 0.39), y = c(0.55, 0.55), gp = gpar(lwd = 3 * scale))
-				grid.lines(x = c(0.45, 0.45), y = c(0.64, 0.82), gp = gpar(lwd = 3 * scale))
-				#grid.lines(x = c(0.56, 0.355), y = c(0.88, 0.49), gp = gpar(lwd = 3, lty = "dotted"))
-			}
-
-			if (i >= 3) {
-				grid.t("Symbol = similar", 0.7, 0.3, scale)
-				grid.curve(x1 = 0.8, x2 = 0.94, y1 = 0.3, y2 = 0.7, gp = gpar(lwd = 3 * scale), arrow = arrow(length = unit(0.02, "npc")))
-			}
-			if (i >= 4) {
-				grid.t("No symbol = not similar,\ntherefore each to distinguish", 0.7, 0.2, scale)
-			}
-
-
-
+			#c4a_plot_dist_matrix(c4a("brewer.accent", 7), cvd = "deutan")
+			simi_frames(i, scale, who = switch(X, D="deutans", P="protans", T="tritans"))
 			dev.off()
 		}
 		gifski::gifski(png_files = list.files(path = "temp", full.names = TRUE), width = 500 * scale, height = 375 * scale, delay = 1.5, gif_file = paste0("inst/img/simi", X, scale, "x.gif"), loop = FALSE)
@@ -262,7 +242,7 @@ for (scale in 1:2) {
 			grid.t("The lower the chroma range -x axis- the more colors are equally saturated: fair", 0.5, 0.07, scale, bg = FALSE)
 		}
 		if (i >= 3) {
-			grid.t("The lower the luminance range (y axis), the more colors are equally bright: fair", 0.05, 0.2, scale, bg = FALSE, just = "left")
+			grid.t("The lower the luminance range -y axis- the more colors are equally bright: fair", 0.05, 0.2, scale, bg = FALSE, just = "left")
 		}
 		if (i >= 4) {
 			grid.t("So the higher the score, the fairer the color palette is!", 0.3, 0.75, scale, bg = FALSE, just = "left")
@@ -292,7 +272,7 @@ for (scale in 1:2) {
 		}
 		if (i >= 2) {
 			grid.rect(x = 0.45, y = 0.45, width = 0.6, height = 0.8, gp = gpar(col = NA, fill = "white"))
-			grid.t("The contract ratio between these two colors\nindicates how distinguishable they are\n- click to select other colors-", 0.5, 0.35, scale, r = 0.1, bg = FALSE)
+			grid.t("The contrast ratio between these two colors\nindicates how distinguishable they are\n- click to select other colors-", 0.5, 0.35, scale, r = 0.1, bg = FALSE)
 			grid.circle(x = 0.31, y = 0.55, r = 0.06, gp = gpar(fill = "#FFFFFF", lwd = 3 * scale))
 			grid.t("?", 0.31, 0.55, scale * 1.5, bg = FALSE)
 			grid.lines(x = c(0.16, 0.25), y = c(0.55, 0.55), gp = gpar(lwd = 3 * scale))
@@ -301,12 +281,12 @@ for (scale in 1:2) {
 		}
 
 		if (i >= 3) {
-			grid.t("Hard to distinguigh\n- borders recommended -", 0.56, 0.76, scale, bg = FALSE)
-			grid.curve(x1 = 0.74, x2 = 0.815, y1 = 0.71, y2 = 0.76, gp = gpar(lwd = 3 * scale), arrow = arrow(length = unit(0.02, "npc")))
+			grid.t("Hard to distinguish\n- borders recommended -", 0.56, 0.76, scale, bg = FALSE)
+			grid.curve(x1 = 0.74, x2 = 0.79, y1 = 0.71, y2 = 0.79, gp = gpar(lwd = 3 * scale), arrow = arrow(length = unit(0.02, "npc")))
 		}
 		if (i >= 4) {
-			grid.t("Easy to distinguigh\n- suitable for text -", 0.57, 0.56, scale, bg = FALSE)
-			grid.curve(x1 = 0.74, x2 = 0.815, y1 = 0.51, y2 = 0.56, gp = gpar(lwd = 3 * scale), arrow = arrow(length = unit(0.02, "npc")))
+			grid.t("Easy to distinguish\n- suitable for text -", 0.57, 0.56, scale, bg = FALSE)
+			grid.curve(x1 = 0.74, x2 = 0.79, y1 = 0.51, y2 = 0.56, gp = gpar(lwd = 3 * scale), arrow = arrow(length = unit(0.02, "npc")))
 		}
 		if (i >= 5) {
 			grid.t("White and black added to analyse\nstandard text readability", 0.4, 0.15, scale, bg = FALSE)
@@ -363,7 +343,7 @@ for (scale in 1:2) {
 	for (i in 1:5) {
 		png(paste0("temp/naming", i, ".png"), width = 1000 * scale, height = 600 * scale, bg = "transparent")
 		#grid.rect(x = 0.50, y = 0.4, width = 0.7, height = 0.8, gp = gpar(fill = "orange"))
-		#c4a_plot_names2(c4a("brewer.accent"))
+		#c4a_plot_names(c4a("brewer.accent"))
 		if (i >= 1) {
 			grid.lines(x = c(0.35, 0.75), y = c(0.68, 0.68), arrow = arrow(length = unit(0.02, "npc"), ends = "both"), gp = gpar(lwd = 2 * scale))
 			grid.t("Most common color names", 0.55, 0.66, scale)
@@ -373,18 +353,17 @@ for (scale in 1:2) {
 			grid.t(" Multitude of colors named after\neach color - in this example \"purple\" -", 0.245, 0.8, scale, bg = TRUE, just = "right")
 		}
 		if (i >= 3) {
-			grid.t(" How likeliy is it that this palette color is named \"yellow\"?", 0.48, 0.435, scale, bg = TRUE, r = 0.1, just = "left")
-			#grid.circle(x = 0.45, y = 0.50, r = 0.06, gp = gpar(fill = NA, col = "#FFFFFF", lwd = 3 * scale))
-			grid.circle(x = 0.455, y = 0.435, r = 0.03, gp = gpar(fill = NA, col = "#000000", lwd = 3 * scale, lty = "dotted"))
+			grid.t(" How likely is it that this palette color is named \"yellow\"?", 0.48, 0.379, scale, bg = TRUE, r = 0.1, just = "left")
+			grid.circle(x = 0.454, y = 0.379, r = 0.03, gp = gpar(fill = NA, col = "#000000", lwd = 3 * scale, lty = "dotted"))
 			#grid.circle(x = 0.55, y = 0.40, r = 0.06, gp = gpar(fill = NA, col = "#FFFFFF", lwd = 3 * scale))
 		}
 		if (i >= 4) {
-			grid.lines(x = c(0.1, 0.95), y = c(0.15, 0.15), gp = gpar(lwd = 3 * scale, lty = "dotted"))
-			grid.t(" A horizontal line is a warning: the palette color does not have a unique name ", 0.5, 0.13, scale, bg = TRUE, r = 0.1, just = "left")
+			grid.lines(x = c(0.1, 0.98), y = c(0.2975, 0.2975), gp = gpar(lwd = 3 * scale, lty = "dotted"))
+			grid.t(" A horizontal line is a warning: the palette color does not have a unique name ", 0.5, 0.25, scale, bg = TRUE, r = 0.1, just = "left")
 		}
 		if (i >= 5) {
-			grid.lines(x = c(0.37, 0.37), y = c(0.05, 0.65), gp = gpar(lwd = 3 * scale, lty = "dotted"))
-			grid.t(" A vertical line is also a warning: multiple palette colors can be called \"pink\" ", 0.38, 0.25, scale, bg = TRUE, r = 0.1, just = "left")
+			grid.lines(x = c(0.288, 0.288), y = c(0.03, 0.65), gp = gpar(lwd = 3 * scale, lty = "dotted"))
+			grid.t(" A vertical line is also a warning: multiple palette colors can be called \"purple\" ", 0.30, 0.09, scale, bg = TRUE, r = 0.1, just = "left")
 		}
 
 		dev.off()

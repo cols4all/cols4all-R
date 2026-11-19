@@ -54,6 +54,11 @@ Useful links:
 \author{
 \strong{Maintainer}: Martijn Tennekes \email{mtennekes@gmail.com}
 
+Authors:
+\itemize{
+  \item Martijn Tennekes \email{mtennekes@gmail.com}
+}
+
 Other contributors:
 \itemize{
   \item Marco Puts \email{mputs@acm.org} [contributor]

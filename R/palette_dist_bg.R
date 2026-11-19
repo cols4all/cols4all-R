@@ -46,8 +46,8 @@ palette_dist_bg = function(x, bgcol = "#FFFFFF", cvd = NULL, severity = 1,
 		base
 	} else if (method == "bg-norm-cr-spread") {
 		cvd_type  = if (is.null(cvd)) "none" else cvd
-		x_sim     = cols4all:::sim_cvd(x,     cvd = cvd_type, severity = severity)
-		bgcol_sim = cols4all:::sim_cvd(bgcol, cvd = cvd_type, severity = severity)
+		x_sim     = sim_cvd(x,     cvd = cvd_type, severity = severity)
+		bgcol_sim = sim_cvd(bgcol, cvd = cvd_type, severity = severity)
 		r   = sapply(x_sim, function(ci) colorspace::contrast_ratio(ci, bgcol_sim))
 		rho = outer(r, r, FUN = function(a, b) pmax(a, b) / pmin(a, b))
 		base * log(rho + 1)

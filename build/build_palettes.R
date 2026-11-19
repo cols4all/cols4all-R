@@ -7,7 +7,7 @@ library(pals)
 library(rcartocolor)
 library(RColorBrewer)
 library(viridisLite)
-library(khroma) # library(scico)
+library(khroma)
 library(ggthemes)
 library(reticulate) # to get seaborn
 library(Polychrome)
@@ -24,26 +24,26 @@ library(ltc)
 sessioninfo::session_info(pkgs = "attached")
 
 # colorblindcheck * 1.0.4   2025-10-09 [1] CRAN (R 4.6.0)
-# colorspace      * 2.1-2   2025-09-22 [1] CRAN (R 4.6.0)
+# colorspace      * 2.1-4   2026-10-08 [1] CRAN (R 4.6.1)
 # devtools        * 2.5.2   2026-04-30 [1] CRAN (R 4.6.0)
 # fitdistrplus    * 1.2-6   2026-01-24 [1] CRAN (R 4.6.0)
-# ggthemes        * 5.2.0   2025-11-30 [1] CRAN (R 4.6.0)
+# ggthemes        * 7.0.0   2026-10-03 [1] CRAN (R 4.6.1)
 # khroma          * 1.17.0  2025-09-29 [1] CRAN (R 4.6.0)
 # ltc             * 0.4.0   2026-07-19 [1] CRAN (R 4.6.1)
-# MASS            * 7.3-65  2025-02-28 [1] CRAN (R 4.6.1)
+# MASS            * 7.3-66  2026-07-15 [1] CRAN (R 4.6.1)
 # MetBrewer       * 0.2.0   2022-03-21 [1] CRAN (R 4.6.0)
 # pals            * 1.10    2025-03-07 [1] CRAN (R 4.6.0)
-# Polychrome      * 1.6.1   2026-07-06 [1] CRAN (R 4.6.1)
+# Polychrome      * 1.6.2   2026-09-24 [1] CRAN (R 4.6.1)
 # rcartocolor     * 2.1.2   2025-07-23 [1] CRAN (R 4.6.0)
 # RColorBrewer    * 1.1-3   2022-04-03 [1] CRAN (R 4.6.0)
 # rcolors         * 0.1.0   2021-04-23 [1] CRAN (R 4.6.0)
-# reticulate      * 1.46.0  2026-04-09 [1] CRAN (R 4.6.0)
+# reticulate      * 1.47.0  2026-09-03 [1] CRAN (R 4.6.1)
 # rvest           * 1.0.5   2025-08-29 [1] CRAN (R 4.6.0)
-# survival        * 3.8-6   2026-01-16 [1] CRAN (R 4.6.1)
-# usethis         * 3.2.1   2025-09-06 [1] CRAN (R 4.6.0)
+# survival        * 3.8-12  2026-09-09 [1] CRAN (R 4.6.1)
+# usethis         * 3.2.2   2026-09-10 [1] CRAN (R 4.6.1)
 # viridisLite     * 0.4.3   2026-02-04 [1] CRAN (R 4.6.0)
 # volcano3D       * 2.0.11  2026-01-14 [1] CRAN (R 4.6.0)
-# xml2            * 1.5.2   2026-01-17 [1] CRAN (R 4.6.0)
+# xml2            * 1.6.0   2026-06-22 [1] CRAN (R 4.6.1)
 
 
 #source("build/build_naming_model.R")
@@ -141,7 +141,7 @@ local({
 
 
 ###################################
-### Tol: from python script (https://personal.sron.nl/~pault/) 2022-02-10
+### Tol: from python script (https://sronpersonalpages.nl/~pault/) 2022-02-10
 ###################################
 
 local({
@@ -153,7 +153,7 @@ local({
 	#     names(l2) = sapply(l2, length)
 	#     dput(l2)
 	rainbow_ids = list(`1` = 10, `2` = c(10, 26), `3` = c(10, 18, 26), `4` = c(10, 15, 18, 26), `5` = c(10, 14, 15, 18, 26), `6` = c(10, 14, 15, 17, 18, 26), `7` = c(9, 10, 14, 15, 17, 18, 26), `8` = c(9, 10, 14, 15, 17, 18, 23, 26), `9` = c(9, 10, 14, 15, 17, 18, 23, 26, 28), `10` = c(9, 10, 14, 15, 17, 18, 21, 24, 26, 28), `11` = c(9, 10, 12, 14, 15, 17, 18, 21, 24, 26, 28), `12` = c(3, 6, 9, 10, 12, 14, 15, 17, 18, 21, 24, 26), `13` = c(3, 6, 9, 10, 12, 14, 15, 16, 17, 18, 21, 24, 26), `14` = c(3, 6, 9, 10, 12, 14, 15, 16, 17, 18, 20, 22, 24, 26), `15` = c(3, 6, 9, 10, 12, 14, 15, 16, 17, 18, 20, 22, 24, 26, 28), `16` = c(3, 5, 7, 9, 10, 12, 14, 15, 16, 17, 18, 20, 22, 24, 26, 28), `17` = c(3, 5, 7, 8, 9, 10, 12, 14, 15, 16, 17, 18, 20, 22, 24, 26, 28), `18` = c(3, 5, 7, 8, 9, 10, 12, 14, 15, 16, 17, 18, 20, 22, 24, 26, 27, 28), `19` = c(2, 4, 5, 7, 8, 9, 10, 12, 14, 15, 16, 17, 18, 20, 22, 24, 26, 27, 28), `20` = c(2, 4, 5, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 20, 22, 24, 26, 27, 28), `21` = c(2, 4, 5, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 21, 23, 25, 26, 27, 28), `22` = c(2, 4, 5, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 21, 23, 25, 26, 27, 28, 29), `23` = c(1, 2, 4, 5, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 21, 23, 25, 26, 27, 28, 29))
-	# from https://personal.sron.nl/~pault/data/tol_colors.py
+	# from https://sronpersonalpages.nl/~pault/data/tol_colors.py
 	p1 = list(bright = c('#4477AA', '#EE6677', '#228833', '#CCBB44', '#66CCEE', '#AA3377', '#BBBBBB'),
 		 contrast = c('#004488', '#DDAA33', '#BB5566'),
 		 vibrant = c('#EE7733', '#0077BB', '#33BBEE', '#EE3377', '#CC3311', '#009988', '#BBBBBB'),
@@ -606,33 +606,49 @@ local({
 })
 
 ###################################
-### package scico
+### Scientific colour maps (Crameri)
 ###################################
 
+# Read directly from the Zenodo release: version 9.0 (2026-11-18), https://doi.org/10.5281/zenodo.24343380
+# (the scico package, used up to cols4all 0.10, is still based on version 8.0)
 local({
-	ids = seq(1,256, length.out=16)
-	d = scico:::palettes
+	zip = file.path(tempdir(), "ScientificColourMaps9.zip")
+	if (!file.exists(zip)) download.file("https://zenodo.org/api/records/24343380/files/ScientificColourMaps9.zip/content", zip, mode = "wb")
+	files = unzip(zip, list = TRUE)$Name
+	f_cont = grep("^ScientificColourMaps9/([^/+]+)/\\1\\.txt$", files, value = TRUE, perl = TRUE)
+	f_cat = grep("^ScientificColourMaps9/[^/+]+/CategoricalPalettes/[^/]+S\\.txt$", files, value = TRUE)
+	exdir = file.path(tempdir(), "ScientificColourMaps9")
+	unzip(zip, files = c(f_cont, f_cat), exdir = exdir)
 
-	d$.categorical = NULL
+	read_scm = function(f) {
+		x = read.table(file.path(exdir, f))
+		rgb(x[[1]], x[[2]], x[[3]], maxColorValue = 1)
+	}
 
-	div = c("broc","cork", "vik", "lisbon", "tofino", "berlin", "bam", "roma", "vanimo", "managua")
+	d = lapply(f_cont, read_scm)
+	names(d) = sub("\\.txt$", "", basename(f_cont))
+
+	d_cat = lapply(f_cat, read_scm)
+	names(d_cat) = sub("S\\.txt$", "", basename(f_cat))
+
+	div = c("broc","cork", "vik", "lisbon", "tofino", "berlin", "bam", "roma", "vanimo", "managua", "delphi", "ston")
 	mseq = c("oleron", "bukavu", "fes")
-	cyc = c( "brocO", "corkO",  "vikO", "romaO", "bamO")
+	cyc = c( "brocO", "corkO",  "vikO", "romaO", "bamO", "batlowO")
 
 	sq = setdiff(names(d), c(div, mseq, cyc))
 
 	pals = mapply(function(x, nm) {
 		if (nm %in% mseq) {
-			c(rampPal(rgb(x$r[128:1], x$g[128:1], x$b[128:1], maxColorValue = 1), 7),
-			rampPal(rgb(x$r[256:129], x$g[256:129], x$b[256:129], maxColorValue = 1), 7))
+			c(rampPal(x[128:1], 7),
+			rampPal(x[256:129], 7))
 		} else if (nm %in% cyc) {
-			rampPal(rgb(c(x$r, x$r[1]), c(x$g, x$g[1]), c(x$b, x$b[1]), maxColorValue = 1), 15)
+			rampPal(c(x, x[1]), 15)
 		} else {
-			rampPal(rgb(x$r, x$g, x$b, maxColorValue = 1), 15)
+			rampPal(x, 15)
 		}
-	}, d, names(d))
+	}, d, names(d), SIMPLIFY = FALSE)
 
-	pals_cat = lapply(scico:::palettes$.categorical, head, 10)
+	pals_cat = lapply(d_cat, head, 10)
 	names(pals_cat) = paste0(names(pals_cat), "_cat")
 
 	pals_div = pals[div]
@@ -641,10 +657,8 @@ local({
 	pals_biv = lapply(pals_biv, function(p) {
 		matrix(p[c(1:7,8:14)], ncol = 2)
 	})
-	pals_biv[["fes"]] = pals_biv[["fes"]][,2:1]
+	# fes: since version 9.0, the first half (ocean) is blue and the second half (land) grey, so no column swap needed anymore
 	pals_cyc = pals[cyc]
-
-	#names(pals_seq)[match(c("batlowK", "batlowW", "grayC"), names(pals_seq))] = c("k_batlow", "w_batlow", "c_gray") # reverse names (because palettes will be reversed)
 
 	c4a_load(c4a_data_as_is(pals_cat, types = "cat", series = "scico"), overwrite = T)
 	c4a_load(c4a_data(pals_div, types = "div", series = "scico"))

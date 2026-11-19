@@ -47,19 +47,16 @@ sim_cvd = function(pal, cvd = c("none", "bw", "deutan", "protan", "tritan"), col
 	cvd = match.arg(cvd)
 	cols = switch(cvd,
 				  none   = function(x, severity) x,
+				  bw     = function(x, severity) hex_to_gray(x),
 				  deutan = colorspace::deutan,
 				  protan = colorspace::protan,
 				  tritan = colorspace::tritan)(pal, severity = severity)
-	ct = as.integer(coltemp)
-
-	if (ct != 6500) {
-		cols = apply_kelvin_filter(cols, ct, kelvin_table)
-	}
-	cols
+	sim_coltemp(cols, coltemp)
 }
 
-c4a_plot_dist_matrix = function(p, id1 = NULL, id2 = NULL, cvd = "none", dark = FALSE, title = "% Discriminable", show_numbers = FALSE, bc_adj = FALSE, thickness = 0.05, mark = "line") {
-	plot_matrix(p = p, id1 = id1, id2 = id2, type = "dist", cvd = cvd, dark = dark, title = title, show_numbers = show_numbers, bc_adj = bc_adj, thickness = thickness, mark = mark)
+# m: optional precomputed get_prob_matrix(p, cvd, whole_matrix = TRUE, ...), to save recomputing it when only id1/id2 change (GUI)
+c4a_plot_dist_matrix = function(p, id1 = NULL, id2 = NULL, cvd = "none", dark = FALSE, title = "% Discriminable", show_numbers = FALSE, bc_adj = FALSE, thickness = 0.05, mark = "line", m = NULL) {
+	plot_matrix(p = p, id1 = id1, id2 = id2, type = "dist", cvd = cvd, dark = dark, title = title, show_numbers = show_numbers, bc_adj = bc_adj, thickness = thickness, mark = mark, m = m)
 }
 
 # No `show_numbers` in the GUI for this matrix -- there's no checkbox for it here.
@@ -67,7 +64,7 @@ c4a_plot_CR_matrix = function(p, id1 = NULL, id2 = NULL, cvd = "none", dark = FA
 	plot_matrix(p = p, id1 = id1, id2 = id2, type = "CR", cvd = cvd, dark = dark, title = title, show_numbers = FALSE)
 }
 
-plot_matrix = function(p, id1 = NULL, id2 = NULL, type = c("CR", "dist"), cvd = "none", coltemp = "6500", dark = FALSE, title = "Contrast ratio", show_numbers = FALSE, bc_adj = FALSE, thickness = 0.05, mark = "line") {
+plot_matrix = function(p, id1 = NULL, id2 = NULL, type = c("CR", "dist"), cvd = "none", coltemp = "6500", dark = FALSE, title = "Contrast ratio", show_numbers = FALSE, bc_adj = FALSE, thickness = 0.05, mark = "line", m = NULL) {
 	n = length(p)
 	type = match.arg(type)
 
@@ -76,7 +73,9 @@ plot_matrix = function(p, id1 = NULL, id2 = NULL, type = c("CR", "dist"), cvd = 
 	texts = .C4A$matrix_interval_labels[[type]]
 
 
-	m = if (type == "CR") {
+	m = if (!is.null(m)) {
+		m
+	} else if (type == "CR") {
 		get_CR_matrix(p)
 	} else {
 		bgcol = if (!bc_adj) {

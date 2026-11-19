@@ -53,29 +53,37 @@ export(scale_fill_discrete_c4a_seq)
 export(visual_angle_to_px)
 import(abind)
 import(colorspace)
-importFrom(grDevices,col2rgb)
-importFrom(grDevices,colorRampPalette)
-importFrom(grDevices,colors)
-importFrom(grDevices,contourLines)
-importFrom(grDevices,dev.size)
-importFrom(grDevices,gray.colors)
-importFrom(grDevices,grey)
-importFrom(grDevices,hcl)
-importFrom(grDevices,rgb)
-importFrom(graphics,abline)
-importFrom(graphics,axis)
-importFrom(graphics,barplot)
-importFrom(graphics,lines)
-importFrom(graphics,par)
+importFrom(grDevices,
+  col2rgb,
+  colorRampPalette,
+  colors,
+  contourLines,
+  dev.size,
+  gray.colors,
+  grey,
+  hcl,
+  rgb
+)
+importFrom(graphics,
+  abline,
+  axis,
+  barplot,
+  lines,
+  par
+)
 importFrom(methods,as)
 importFrom(png,readPNG)
 importFrom(spacesXYZ,DeltaE)
-importFrom(stats,dbeta)
-importFrom(stats,lm)
-importFrom(stats,na.omit)
-importFrom(stats,predict)
-importFrom(stats,rnorm)
-importFrom(stats,runif)
-importFrom(utils,combn)
-importFrom(utils,head)
-importFrom(utils,tail)
+importFrom(stats,
+  dbeta,
+  lm,
+  na.omit,
+  predict,
+  rnorm,
+  runif
+)
+importFrom(utils,
+  combn,
+  head,
+  tail
+)

@@ -14,6 +14,7 @@ c4a_table(
   continuous = FALSE,
   filters = character(0),
   cvd.sim = c("none", "bw", "deutan", "protan", "tritan"),
+  col.temp = 6500,
   sort = "name",
   text.format = "hex",
   text.col = "same",
@@ -21,6 +22,7 @@ c4a_table(
   range = NA,
   colorsort = "orig",
   include.na = FALSE,
+  include_tritan = FALSE,
   show.scores = FALSE,
   columns = NA,
   verbose = TRUE
@@ -39,6 +41,8 @@ c4a_table(
 
 \item{cvd.sim}{color vision deficiency simulation: one of \code{"none"}, \code{"bw"}, \code{"deutan"}, \code{"protan"}, \code{"tritan"}}
 
+\item{col.temp}{display color temperature in Kelvin: one of \code{6500} (default), \code{4000}, \code{2700} and \code{2200}. Lower values simulate a display with a warmer white point, such as night mode. Viewers partly adapt to a warmer white, so the perceived shift is much smaller than the physical shift of the emitted light. To approximate the perceived colors, white is mapped to a fixed perceived white per temperature (the page background used in \code{\link[=c4a_gui]{c4a_gui()}}: \verb{#F4F1EA}, \verb{#F3E6D3} and \verb{#ECD6B3} respectively), and all other colors are transformed accordingly with a von Kries chromatic adaptation transform in Bradford cone space. The amount of adaptation in reality depends on viewing conditions and time.}
+
 \item{sort}{column name to sort the data. The available column names depend on the arguments \code{type} and \code{show.scores}. They are listed in the warning message. Use a \code{"-"} prefix to reverse the order.}
 
 \item{text.format}{The format of the text of the colors. One of \code{"hex"}, \code{"RGB"} or \code{"HCL"}.}
@@ -50,6 +54,8 @@ c4a_table(
 \item{colorsort}{Sort the colors (\code{"cat"} only). Options: \code{"orig"} (original order), \code{"Hx"} (hue, where x is a starting number from 0 to 360), \code{"C"} (chroma), \code{"L"} (luminance)}
 
 \item{include.na}{should color for missing values be shown? \code{FALSE} by default}
+
+\item{include_tritan}{should tritan (blue-yellow color vision deficiency, about 1 in 10,000 people) be taken into account by the colorblind-friendly filter (\code{filters = "cbf"}) and badge, besides deutan and protan (red-green, together about 4\% of the population)? \code{FALSE} by default, as in \code{c4a_gui()}.}
 
 \item{show.scores}{should scores of the quality indicators be printed? See details for a description of those indicators.}
 

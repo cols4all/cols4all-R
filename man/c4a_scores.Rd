@@ -10,7 +10,8 @@ c4a_scores(
   series = NULL,
   n = NA,
   no.match = c("message", "error", "null"),
-  verbose = TRUE
+  verbose = TRUE,
+  include_tritan = TRUE
 )
 }
 \arguments{
@@ -25,6 +26,11 @@ c4a_scores(
 \item{no.match}{what happens is no match is found? Options: \code{"message"}: a message is thrown with suggestions, \code{"error"}: an error is thrown, \code{"null"}: \code{NULL} is returned}
 
 \item{verbose}{should messages be printed?}
+
+\item{include_tritan}{should tritan (blue-yellow color vision deficiency,
+~1 in 10,000 people) be included in the worst-case color-blind-friendly
+score, alongside deutan and protan (red-green, together ~4\% of the
+population)? Set to \code{FALSE} to score on deutan+protan only.}
 }
 \value{
 list with the following items: name, series, fullname, type, palette (colors), na (color), nmax, and reverse. The latter is \code{TRUE} when there is a \code{"-"} prefix before the palette name.

@@ -152,6 +152,9 @@ body.temp-2200 .logo {
    KELVIN THEMES — MANUAL, PERCEPTUAL
 ========================================================= */
 
+/* The body background colors below are also the perceived white used for the
+   palette colors: keep them in sync with .coltemp_white in R/col_temp.R */
+
 /* ---------- 4000 K ---------- */
 
 body.temp-4000 {
