@@ -16,6 +16,7 @@ c4a_table(
   continuous = FALSE,
   filters = character(0),
   cvd.sim = c("none", "bw", "deutan", "protan", "tritan"),
+  col.temp = 6500,
   sort = "name",
   text.format = "hex",
   text.col = "same",
@@ -23,6 +24,7 @@ c4a_table(
   range = NA,
   colorsort = "orig",
   include.na = FALSE,
+  include_tritan = FALSE,
   show.scores = FALSE,
   columns = NA,
   verbose = TRUE
@@ -73,6 +75,19 @@ c4a_table(
   color vision deficiency simulation: one of `"none"`, `"bw"`,
   `"deutan"`, `"protan"`, `"tritan"`
 
+- col.temp:
+
+  display color temperature in Kelvin: one of `6500` (default), `4000`,
+  `2700` and `2200`. Lower values simulate a display with a warmer white
+  point, such as night mode. Viewers partly adapt to a warmer white, so
+  the perceived shift is much smaller than the physical shift of the
+  emitted light. To approximate the perceived colors, white is mapped to
+  a fixed perceived white per temperature (the page background used in
+  `c4a_gui()`: `#F4F1EA`, `#F3E6D3` and `#ECD6B3` respectively), and all
+  other colors are transformed accordingly with a von Kries chromatic
+  adaptation transform in Bradford cone space. The amount of adaptation
+  in reality depends on viewing conditions and time.
+
 - sort:
 
   column name to sort the data. The available column names depend on the
@@ -112,6 +127,14 @@ c4a_table(
 - include.na:
 
   should color for missing values be shown? `FALSE` by default
+
+- include_tritan:
+
+  should tritan (blue-yellow color vision deficiency, about 1 in 10,000
+  people) be taken into account by the colorblind-friendly filter
+  (`filters = "cbf"`) and badge, besides deutan and protan (red-green,
+  together about 4% of the population)? `FALSE` by default, as in
+  `c4a_gui()`.
 
 - show.scores:
 

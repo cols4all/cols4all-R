@@ -111,7 +111,7 @@ c4a_na(
   format of the colors. One of: `"hex"` character vector of hex color
   values, `"rgb"` 3 column matrix of RGB values, `"hcl"` 3-column matrix
   of HCL values, or one of the color classes from
-  [`colorspace`](https://colorspace.R-Forge.R-project.org/reference/color-class.html)
+  [`colorspace`](https://zeileis.codeberg.page/colorspace/reference/color-class.html)
 
 - nm_invalid:
 
@@ -208,7 +208,7 @@ c4a_palettes(type = "cat")
 #>  [87] "tableau.superfishel_stone"      "tableau.nuriel_stone"          
 #>  [89] "tableau.jewel_bright"           "tableau.summer"                
 #>  [91] "tableau.winter"                 "tableau.green_orange_teal"     
-#>  [93] "tableau.red_blue_brown"         "tableau.purple_pink_gray"      
+#>  [93] "tableau.blue_red_brown"         "tableau.purple_pink_gray"      
 #>  [95] "tableau.hue_circle"             "tableau.classic10"             
 #>  [97] "tableau.classic10medium"        "tableau.classic10light"        
 #>  [99] "tableau.classic20"              "tableau.classic_gray5"         

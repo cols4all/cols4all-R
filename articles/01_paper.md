@@ -1030,9 +1030,8 @@ Analysis*, vol. 53, no. 9, pp. 3259–3270, 2009, doi:
 
 \[3\]
 
-T. L. Pedersen and F. Crameri, *Scico: Colour palettes based on the
-scientific colour-maps*. 2021. Available:
-<https://CRAN.R-project.org/package=scico>
+F. Crameri, “Scientific colour maps.” Zenodo, 2026. doi:
+[10.5281/zenodo.24343380](https://doi.org/10.5281/zenodo.24343380).
 
 \[4\]
 
@@ -1049,7 +1048,7 @@ Available: <https://jfly.uni-koeln.de/color/>
 \[6\]
 
 P. Tol, “Colour schemes and templates.” 2021. Available:
-<https://personal.sron.nl/~pault/>
+<https://sronpersonalpages.nl/~pault/>
 
 \[7\]
 
@@ -1258,4 +1257,4 @@ and shiny*. Chapman; Hall/CRC, 2020. Available: <https://plotly-r.com>
 \[41\]
 
 P. Kovesi, “Good colour maps: How to design them,” *CoRR*, vol.
-abs/1509.03700, 2015, Available: <http://arxiv.org/abs/1509.03700>
+abs/1509.03700, 2015, Available: <https://arxiv.org/abs/1509.03700>

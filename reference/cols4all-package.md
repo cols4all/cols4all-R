@@ -55,6 +55,10 @@ Useful links:
 
 **Maintainer**: Martijn Tennekes <mtennekes@gmail.com>
 
+Authors:
+
+- Martijn Tennekes <mtennekes@gmail.com>
+
 Other contributors:
 
 - Marco Puts <mputs@acm.org> \[contributor\]

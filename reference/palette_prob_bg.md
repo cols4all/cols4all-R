@@ -59,6 +59,9 @@ palette_prob_bg(
   /
   [`point_discrim_prob()`](https://cols4all.github.io/reference/point_discrim_prob.md)
   model. See their documentation for the (different) validated ranges.
+  For `mark = "point"`, sizes below 0.25 degrees are set to 0.25 degrees
+  (with a warning), because the point model is not valid below that
+  size.
 
 - mark:
 

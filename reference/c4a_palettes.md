@@ -30,10 +30,6 @@ c4a_overview(return.matrix = FALSE, zero.count.as.NA = FALSE)
 .P
 ```
 
-## Format
-
-An object of class `environment` of length 21.
-
 ## Arguments
 
 - type:
@@ -131,7 +127,7 @@ c4a_overview()
 #> 14  pinkfloyd     Palettes extracted from Pink Floyd album covers  16   0   0
 #> 15       poly               Qualitative palettes with many colors   9   0   0
 #> 16    powerbi                    Palettes from Microsoft Power BI  19   1   4
-#> 17      scico             Scientific colour maps by Fabio Crameri  21  21  10
+#> 17      scico             Scientific colour maps by Fabio Crameri  21  21  12
 #> 18    seaborn            Palettes from the Python library Seaborn   6   4   2
 #> 19    stevens                Bivariate palettes by Joshua Stevens   0   5   0
 #> 20    tableau                        Palettes designed by Tableau  29  23  28
@@ -154,7 +150,7 @@ c4a_overview()
 #> 14   0    0    0    0    0
 #> 15   0    0    0    0    0
 #> 16   0    0    0    0    0
-#> 17   5    0    2    0    1
+#> 17   6    0    2    0    1
 #> 18   0    0    0    0    0
 #> 19   0    5    0    0    0
 #> 20   0    0    3    0    0

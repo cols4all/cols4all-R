@@ -11,7 +11,8 @@ c4a_scores(
   series = NULL,
   n = NA,
   no.match = c("message", "error", "null"),
-  verbose = TRUE
+  verbose = TRUE,
+  include_tritan = TRUE
 )
 ```
 
@@ -42,6 +43,13 @@ c4a_scores(
 - verbose:
 
   should messages be printed?
+
+- include_tritan:
+
+  should tritan (blue-yellow color vision deficiency, ~1 in 10,000
+  people) be included in the worst-case color-blind-friendly score,
+  alongside deutan and protan (red-green, together ~4% of the
+  population)? Set to `FALSE` to score on deutan+protan only.
 
 ## Value
 
