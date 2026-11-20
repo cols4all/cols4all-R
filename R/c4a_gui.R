@@ -195,7 +195,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 							value = "tab_catel",
 					 shiny::fluidRow(
 					 	shiny::column(width = 3,
-					 				  shiny::img(src = "imgResources/cols4all_logo.png", height="200", class = "logo", align = "center", 'vertical-align' = "center")),
+					 				  shiny::img(src = "imgResources/cols4all_logo.png", srcset = "imgResources/cols4all_logo.png 1x, imgResources/cols4all_logo_2x.png 2x", class = "logo", style = "display: block; width: 100%; max-width: 240px; height: auto; margin: 0 auto;", alt = "cols4all logo")),
 					 	shiny::column(width = 3,
 					 				  shiny::radioButtons("type1", "Palette type", choices = types1, selected = type1),
 					 				   				  				  shiny::conditionalPanel(
@@ -229,10 +229,7 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 					 				  						  shiny::div(style = "font-size:0;margin-bottom:-10px", shiny::sliderInput("range", "", min = 0, max = 1, value = c(0,1), step = .05)),
 					 				  						  shiny::uiOutput("range_info"))
 					 				  		)
-					 				  	))
-					 	),
-
-					 	shiny::column(width = 3,
+					 				  	)),
 					 				  # Static, not renderUI: get_cols()'s observer (below) already
 					 				  # rebuilds this dropdown's full choice list type-aware, straight
 					 				  # from table_columns() -- and it bails out if input$sort doesn't
@@ -244,17 +241,20 @@ c4a_gui = function(type = "cat", n = NA, series = "all") {
 					 				  # checkboxes tight), but that leaves this checkbox flush against
 					 				  # the selectize widget's own visible border/padding above it,
 					 				  # which reads as cramped in a way checkbox-to-checkbox doesn't.
-					 				  shiny::div(style = "margin-top: 8px;", shiny::checkboxInput("sortRev", "Reverse sorting", value = FALSE)),
-					 				  # Only affects the "Colorblind-friendly" filter below (and,
+					 				  shiny::div(style = "margin-top: 8px;", shiny::checkboxInput("sortRev", "Reverse sorting", value = FALSE))
+					 	),
+
+					 	shiny::column(width = 3,
+					 				  #shiny::div(style = "margin-bottom: 5px;", shiny::strong("Select")),
+					 				  shiny::div(class = "control-label2", "Filter"),
+					 				  shiny::checkboxGroupInput("filters", label = "", choices = gui_filters(type12), inline = FALSE),
+					 				  # Only affects the "Colorblind-friendly" filter above (and,
 					 				  # for types without a per-CVD column breakdown, the CBF
 					 				  # badge) -- NOT the Separability columns in the categorical
 					 				  # table, which always show all 4 (N/D/P/T) individually.
 					 				  # Unchecked by default: tritan is ~400x rarer than deutan+
 					 				  # protan combined (~1 in 10,000 vs ~4% of the population).
 					 				  shiny::checkboxInput("include_tritan", "Include tritan in colorblind-friendly filter", value = FALSE),
-					 				  #shiny::div(style = "margin-bottom: 5px;", shiny::strong("Select")),
-					 				  shiny::div(class = "control-label2", "Filter"),
-					 				  shiny::checkboxGroupInput("filters", label = "", choices = gui_filters(type12), inline = FALSE),
 
 					 				  shiny::div(class = "control-label2", "Palette series"),
 
