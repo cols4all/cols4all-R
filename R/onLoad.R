@@ -357,7 +357,7 @@ do_cellspec = function(lst) {
 									'0' = "",
 									'2' = list("&#9786;&#9786;", extra_css="font-size: 80%;", tooltip = "Extra colorblind-friendly! Also for points and lines", escape = FALSE),
 									'1' = list("&#9786;", extra_css="font-size: 80%;", tooltip = "Colorblind-friendly! Be careful with points and lines", escape = FALSE),
-									'-1' = list("&#128064;", extra_css ="font-size: 60%;", tooltip = "Be careful! Some colors are hard to distinguish by color blind people (see tab 'Color Blind Friendliness'", escape = FALSE)),
+									'-1' = list("&#128064;", extra_css ="font-size: 60%;", tooltip = "Be careful! Some colors are hard to distinguish by color blind people (see tab 'Color Discrimination')", escape = FALSE)),
 					  # Single-glyph variant for the 4 per-CVD N/D/P/T
 					  # columns (cbf_none/_deutan/_protan/_tritan): with 4
 					  # independent columns per row, a 2-glyph icon (like
@@ -372,7 +372,7 @@ do_cellspec = function(lst) {
 									'0' = "",
 									'2' = list("&#9786;&#9786;", extra_css="font-size: 80%; letter-spacing: -0.15em;", tooltip = "Very separable! Also for points and lines", escape = FALSE),
 									'1' = list("&#9786;", extra_css="font-size: 80%;", tooltip = "Separable. Be careful with points and lines", escape = FALSE),
-									'-1' = list("&#128065;", extra_css ="font-size: 60%;", tooltip = "Be careful! Colors are hard to separate for this vision type (see tab 'Color Blind Friendliness')", escape = FALSE)),
+									'-1' = list("&#128065;", extra_css ="font-size: 60%;", tooltip = "Be careful! Colors are hard to separate for this vision type (see tab 'Color Discrimination')", escape = FALSE)),
 				  chroma = list('NA' = "",
 				  			  'H' = list("&#x1f576;", tooltip = "Vivid colors (high chroma) present: ideal for small important objects to stand out (e.g. markers on a map), but less suited for space filling visualizations because it may cause eye fatigue (see tab 'HCL Analysis')", escape = FALSE),
 				  			  'M' = "",
