@@ -5,7 +5,7 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Graphical user interface to analyse palettes — c4a_gui"><meta name="description" content="Graphical user interface to analyse palettes. c4a_table shows a table that can be opened in the browser. c4a_gui is a graphical user interface (shiny app) around this table."><meta property="og:description" content="Graphical user interface to analyse palettes. c4a_table shows a table that can be opened in the browser. c4a_gui is a graphical user interface (shiny app) around this table."><meta property="og:image" content="https://cols4all.github.io/logo.png"></head><body>
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Graphical user interface to analyse palettes — c4a_gui"><meta name="description" content="Graphical user interface to analyse palettes. c4a_table shows a table that can be opened in the browser. c4a_gui opens the cols4all website (https://cols4all.org), a graphical user interface around this table with tabs to analyse a palette in depth."><meta property="og:description" content="Graphical user interface to analyse palettes. c4a_table shows a table that can be opened in the browser. c4a_gui opens the cols4all website (https://cols4all.org), a graphical user interface around this table with tabs to analyse a palette in depth."><meta property="og:image" content="https://cols4all.github.io/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -44,12 +44,18 @@
     </div>
 
     <div class="ref-description section level2">
-    <p>Graphical user interface to analyse palettes. <code>c4a_table</code> shows a table that can be opened in the browser. <code>c4a_gui</code> is a graphical user interface (shiny app) around this table.</p>
+    <p>Graphical user interface to analyse palettes. <code>c4a_table</code> shows a table that can be opened in the browser. <code>c4a_gui</code> opens the cols4all website (<a href="https://cols4all.org" class="external-link">https://cols4all.org</a>), a graphical user interface around this table with tabs to analyse a palette in depth.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">c4a_gui</span><span class="op">(</span>type <span class="op">=</span> <span class="st">"cat"</span>, n <span class="op">=</span> <span class="cn">NA</span>, series <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">c4a_gui</span><span class="op">(</span></span>
+<span>  type <span class="op">=</span> <span class="st">"cat"</span>,</span>
+<span>  n <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  series <span class="op">=</span> <span class="st">"all"</span>,</span>
+<span>  local <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  browse <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">c4a_table</span><span class="op">(</span></span>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cat"</span>, <span class="st">"seq"</span>, <span class="st">"div"</span>, <span class="st">"cyc"</span>, <span class="st">"bivs"</span>, <span class="st">"bivc"</span>, <span class="st">"bivd"</span>, <span class="st">"bivg"</span><span class="op">)</span>,</span>
@@ -87,6 +93,14 @@
 
 <dt id="arg-series">series<a class="anchor" aria-label="anchor" href="#arg-series"></a></dt>
 <dd><p>Series of palettes to show. See <code><a href="c4a_palettes.html">c4a_series</a></code> for options. By default, <code>"all"</code>, which means all series. For <code>c4a_gui</code> it only determines which series are shown initially.</p></dd>
+
+
+<dt id="arg-local">local<a class="anchor" aria-label="anchor" href="#arg-local"></a></dt>
+<dd><p>should the local shiny app be started instead of the website? <code>FALSE</code> by default. The shiny app will be removed in a future version.</p></dd>
+
+
+<dt id="arg-browse">browse<a class="anchor" aria-label="anchor" href="#arg-browse"></a></dt>
+<dd><p>should the website be opened in the browser? By default <code>TRUE</code> in interactive sessions. The link is returned invisibly.</p></dd>
 
 
 <dt id="arg-continuous">continuous<a class="anchor" aria-label="anchor" href="#arg-continuous"></a></dt>
@@ -147,11 +161,13 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An HMTL table (<code>kableExtra</code> object)</p>
+    <p><code>c4a_table</code>: an HTML table (<code>kableExtra</code> object). <code>c4a_gui</code>: the link to the website (invisibly).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>See vignette how the properties are calculated. Parameters, such as threshold values which determined when palettes are classified as "colorblind-friendly", can be specified via <code><a href="c4a_options.html">c4a_options</a></code>. Also the nameability score function (which is in development) can be specified there. See the examples of <code><a href="c4a_options.html">c4a_options</a></code> for both use cases.</p>
+    <p>Own palettes that are loaded with <code><a href="c4a_data.html">c4a_load</a></code> are added to the website (as series <code>"custom"</code>) and are scored there in the same way as in cols4all. They are not uploaded: they are only stored in the link that is opened. The website applies the default range of sequential and diverging palettes, interpolates in RGB space, and determines the color for missing values itself, so palettes that deviate from these defaults may look slightly different. The website shows at most 20 own palettes with at most 36 colors each.</p>
+<p>With <code>local = TRUE</code>, the previous version of the graphical user interface is started: a shiny app that runs locally, for instance for offline use. It requires the packages shiny, shinyjs, kableExtra, colorblindcheck and plotly. It will be removed in a future version of cols4all.</p>
+<p>See vignette how the properties are calculated. Parameters, such as threshold values which determined when palettes are classified as "colorblind-friendly", can be specified via <code><a href="c4a_options.html">c4a_options</a></code>. Also the nameability score function (which is in development) can be specified there. See the examples of <code><a href="c4a_options.html">c4a_options</a></code> for both use cases.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -160,14 +176,23 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"shiny"</span><span class="op">)</span> <span class="op">&amp;&amp;</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"shinyjs"</span><span class="op">)</span> <span class="op">&amp;&amp;</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"kableExtra"</span><span class="op">)</span> <span class="op">&amp;&amp;</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"colorblindcheck"</span><span class="op">)</span> <span class="op">&amp;&amp;</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># open the cols4all website</span></span></span>
 <span class="r-in"><span><span class="fu">c4a_gui</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># sequential palettes with 5 colors of two series</span></span></span>
+<span class="r-in"><span><span class="fu">c4a_gui</span><span class="op">(</span>type <span class="op">=</span> <span class="st">"seq"</span>, n <span class="op">=</span> <span class="fl">5</span>, series <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"brewer"</span>, <span class="st">"scico"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"colorblindcheck"</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># test an own palette: it is added to the website</span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">=</span> <span class="fu"><a href="c4a_data.html">c4a_data</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>my_pal <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#E69F00"</span>, <span class="st">"#56B4E9"</span>, <span class="st">"#009E73"</span>, <span class="st">"#F0E442"</span>, <span class="st">"#0072B2"</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  types <span class="op">=</span> <span class="st">"cat"</span>, series <span class="op">=</span> <span class="st">"mine"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="c4a_data.html">c4a_load</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">c4a_gui</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"kableExtra"</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span><span class="co"># categorical palettes with maximum number of colors</span></span></span>
 <span class="r-in"><span><span class="fu">c4a_table</span><span class="op">(</span>type <span class="op">=</span> <span class="st">"cat"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

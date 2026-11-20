@@ -1,13 +1,20 @@
 # Graphical user interface to analyse palettes
 
 Graphical user interface to analyse palettes. `c4a_table` shows a table
-that can be opened in the browser. `c4a_gui` is a graphical user
-interface (shiny app) around this table.
+that can be opened in the browser. `c4a_gui` opens the cols4all website
+(<https://cols4all.org>), a graphical user interface around this table
+with tabs to analyse a palette in depth.
 
 ## Usage
 
 ``` r
-c4a_gui(type = "cat", n = NA, series = "all")
+c4a_gui(
+  type = "cat",
+  n = NA,
+  series = "all",
+  local = FALSE,
+  browse = interactive()
+)
 
 c4a_table(
   type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd", "bivg"),
@@ -55,6 +62,16 @@ c4a_table(
   [`c4a_series`](https://cols4all.github.io/reference/c4a_palettes.md)
   for options. By default, `"all"`, which means all series. For
   `c4a_gui` it only determines which series are shown initially.
+
+- local:
+
+  should the local shiny app be started instead of the website? `FALSE`
+  by default. The shiny app will be removed in a future version.
+
+- browse:
+
+  should the website be opened in the browser? By default `TRUE` in
+  interactive sessions. The link is returned invisibly.
 
 - continuous:
 
@@ -152,9 +169,26 @@ c4a_table(
 
 ## Value
 
-An HMTL table (`kableExtra` object)
+`c4a_table`: an HTML table (`kableExtra` object). `c4a_gui`: the link to
+the website (invisibly).
 
 ## Details
+
+Own palettes that are loaded with
+[`c4a_load`](https://cols4all.github.io/reference/c4a_data.md) are added
+to the website (as series `"custom"`) and are scored there in the same
+way as in cols4all. They are not uploaded: they are only stored in the
+link that is opened. The website applies the default range of sequential
+and diverging palettes, interpolates in RGB space, and determines the
+color for missing values itself, so palettes that deviate from these
+defaults may look slightly different. The website shows at most 20 own
+palettes with at most 36 colors each.
+
+With `local = TRUE`, the previous version of the graphical user
+interface is started: a shiny app that runs locally, for instance for
+offline use. It requires the packages shiny, shinyjs, kableExtra,
+colorblindcheck and plotly. It will be removed in a future version of
+cols4all.
 
 See vignette how the properties are calculated. Parameters, such as
 threshold values which determined when palettes are classified as
@@ -173,14 +207,23 @@ References of the palettes:
 ## Examples
 
 ``` r
-if (requireNamespace("shiny") &&
-  requireNamespace("shinyjs") &&
-  requireNamespace("kableExtra") &&
-  requireNamespace("colorblindcheck") &&
-  interactive()) {
-
+if (interactive()) {
+# open the cols4all website
 c4a_gui()
 
+# sequential palettes with 5 colors of two series
+c4a_gui(type = "seq", n = 5, series = c("brewer", "scico"))
+}
+
+if (requireNamespace("colorblindcheck") && interactive()) {
+# test an own palette: it is added to the website
+x = c4a_data(list(my_pal = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2")),
+  types = "cat", series = "mine")
+c4a_load(x)
+c4a_gui()
+}
+
+if (requireNamespace("kableExtra") && interactive()) {
 # categorical palettes with maximum number of colors
 c4a_table(type = "cat")
 
