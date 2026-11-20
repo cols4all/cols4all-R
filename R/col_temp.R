@@ -21,7 +21,7 @@
 sim_coltemp = function(cols, coltemp = "6500") {
 	coltemp = as.character(coltemp)
 	if (!(coltemp %in% names(.coltemp_white))) stop("color temperature should be one of ", paste(names(.coltemp_white), collapse = ", "), call. = FALSE)
-	if (coltemp == "6500") return(cols)
+	if (coltemp == "6500" || !length(cols)) return(cols)
 
 	to_xyz = function(x) colorspace::coords(as(colorspace::hex2RGB(x), "XYZ"))
 
