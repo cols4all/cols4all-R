@@ -1,3 +1,7 @@
+# cols4all (development version)
+- c4a_gui() opens the cols4all website, https://cols4all.org, which also shows and scores own palettes loaded with c4a_load(); see ?c4a_gui.
+- the shiny app is still available with c4a_gui(local = TRUE), but will be removed in a future version.
+
 # cols4all 0.11
 - Scientific colour maps (series "scico") updated to version 9.0
 - palette "tableau.red_blue_brown" renamed to "tableau.blue_red_brown" (following ggthemes); the old name still works

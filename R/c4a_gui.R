@@ -60,7 +60,107 @@ gui_filters = function(type) {
 #' @rdname c4a_gui
 #' @name c4a_gui
 #' @export
-c4a_gui = function(type = "cat", n = NA, series = "all") {
+c4a_gui = function(type = "cat", n = NA, series = "all", local = FALSE, browse = interactive()) {
+	if (local) {
+		message("The local version of c4a_gui() (a shiny app) will be removed in a future version of cols4all. The website ", .c4a_website, " has the same functionality.")
+		return(c4a_gui_shiny(type = type, n = n, series = series))
+	}
+	url = c4a_gui_url(type = type, n = n, series = series)
+	if (browse) {
+		if (nchar(url) > 2000 && .Platform$OS.type == "windows") {
+			message("The link is too long to open automatically on Windows. Please copy it to the browser:\n", url)
+		} else {
+			utils::browseURL(url)
+		}
+	}
+	invisible(url)
+}
+
+.c4a_website = "https://cols4all.org"
+
+# Link to the cols4all website, with the settings of c4a_gui() and the
+# palettes loaded with c4a_load() (series that are not part of cols4all).
+# The website scores these palettes itself, in the same way as cols4all does.
+c4a_gui_url = function(type = "cat", n = NA, series = "all", website = .c4a_website) {
+	types = unname(.C4A$types)
+	if (!(type %in% types)) {
+		warning("type \"", type, "\" is not available/known", call. = FALSE)
+		type = "cat"
+	}
+	args = character(0)
+	if (type != "cat") args = c(args, paste0("type=", type))
+	if (!is.na(n)) args = c(args, paste0("n=", as.integer(n)))
+
+	z = .C4A$z
+	builtin = z$fullname %in% .z$fullname
+	if (!identical(series, "all")) {
+		series_bi = intersect(series, unique(z$series[builtin]))
+		# (empty when only own series are selected: then only those are shown)
+		args = c(args, paste0("series=", paste(series_bi, collapse = ",")))
+	}
+
+	zc = z[!builtin & (identical(series, "all") | z$series %in% series), , drop = FALSE]
+	if (nrow(zc)) {
+		my = c4a_gui_url_palettes(zc)
+		if (length(my)) {
+			args = c(args, paste0("my=", my))
+			message("Your own palette", if (length(my) > 1) "s are" else " is", " added to the website (series \"custom\"), and scored there. ",
+					"Nothing is uploaded: ", if (length(my) > 1) "they are" else "it is", " only stored in the link.")
+		}
+	}
+	paste0(website, "/", if (length(args)) paste0("?", paste(args, collapse = "&")) else "")
+}
+
+# Palettes as values of the website's URL parameter "my": type.name.color1.color2...
+# (bivariate: type.name.ncol.color1..., colors by row)
+c4a_gui_url_palettes = function(z) {
+	max_colors = 36
+	max_pals = 20
+	if (nrow(z) > max_pals) {
+		message("The website can show at most ", max_pals, " own palettes. Only the first ", max_pals, " are added: ", paste(z$fullname[1:max_pals], collapse = ", "))
+		z = z[1:max_pals, ]
+	}
+	clean = function(x) substr(gsub("^_+|_+$", "", gsub("[^a-z0-9]+", "_", tolower(x))), 1, 40)
+	nms = make.unique(clean(paste(z$series, z$name, sep = "_")), sep = "")
+
+	res = mapply(function(pal, type, name, fullname) {
+		isbiv = substr(type, 1, 3) == "biv"
+		if (!is.null(attr(pal, "index"))) {
+			message("Palette ", fullname, " uses different colors per number of colors (\"index\"). The website uses the first colors of the full palette instead.")
+		}
+		if (type %in% c("seq", "div", "cyc")) {
+			rm = attr(pal, "range_matrix")
+			rm_def = do.call(paste0("range_", type), list(n = length(pal)))
+			if (!is.null(rm) && !isTRUE(all.equal(unname(rm), unname(rm_def)))) {
+				message("Palette ", fullname, " has a non-default range (range_matrix_args). The website uses the default range.")
+			}
+			if (identical(attr(pal, "space"), "Lab")) {
+				message("Palette ", fullname, " is interpolated in Lab space. The website interpolates in RGB space.")
+			}
+		}
+		cols = if (isbiv) as.vector(t(pal)) else as.vector(pal)
+		if (length(cols) > max_colors) {
+			if (type %in% c("seq", "div")) {
+				space = attr(pal, "space")
+				cols = rampPal(cols, max_colors, space = if (is.null(space)) "rgb" else space)
+			} else {
+				message("Palette ", fullname, " has more than ", max_colors, " colors, which is the maximum for the website. It is not added.")
+				return(NA_character_)
+			}
+		}
+		cols = toupper(sub("^#", "", substr(col2hex(cols), 1, 7)))
+		paste(c(type, name, if (isbiv) ncol(pal), cols), collapse = ".")
+	}, z$palette, z$type, nms, z$fullname, USE.NAMES = FALSE)
+	res[!is.na(res)]
+}
+
+# colors (names or hex, possibly with alpha) to #RRGGBB
+col2hex = function(x) {
+	m = grDevices::col2rgb(x)
+	grDevices::rgb(m[1, ], m[2, ], m[3, ], maxColorValue = 255)
+}
+
+c4a_gui_shiny = function(type = "cat", n = NA, series = "all") {
 	ani_off = shiny::icon("circle-xmark", "fa-2x")
 	ani_on = shiny::icon("circle-info", "fa-2x")
 

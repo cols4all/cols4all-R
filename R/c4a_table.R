@@ -650,7 +650,11 @@ plot_table = function(p, text.format, text.col, include.na, cvd.sim, coltemp, ve
 
 #' Graphical user interface to analyse palettes
 #'
-#' Graphical user interface to analyse palettes. `c4a_table` shows a table that can be opened in the browser. `c4a_gui` is a graphical user interface (shiny app) around this table.
+#' Graphical user interface to analyse palettes. `c4a_table` shows a table that can be opened in the browser. `c4a_gui` opens the cols4all website (<https://cols4all.org>), a graphical user interface around this table with tabs to analyse a palette in depth.
+#'
+#' Own palettes that are loaded with \code{\link{c4a_load}} are added to the website (as series `"custom"`) and are scored there in the same way as in cols4all. They are not uploaded: they are only stored in the link that is opened. The website applies the default range of sequential and diverging palettes, interpolates in RGB space, and determines the color for missing values itself, so palettes that deviate from these defaults may look slightly different. The website shows at most 20 own palettes with at most 36 colors each.
+#'
+#' With `local = TRUE`, the previous version of the graphical user interface is started: a shiny app that runs locally, for instance for offline use. It requires the packages shiny, shinyjs, kableExtra, colorblindcheck and plotly. It will be removed in a future version of cols4all.
 #'
 #' See vignette how the properties are calculated. Parameters, such as threshold values which determined when palettes are classified as "colorblind-friendly", can be specified via \code{\link{c4a_options}}. Also the nameability score function (which is in development) can be specified there. See the examples of \code{\link{c4a_options}} for both use cases.
 #'
@@ -671,6 +675,8 @@ plot_table = function(p, text.format, text.col, include.na, cvd.sim, coltemp, ve
 #' @param show.scores should scores of the quality indicators be printed? See details for a description of those indicators.
 #' @param columns number of columns. By default equal to `n` or, if not specified, 12. Cannot be higher than the palette lengths.
 #' @param verbose should messages and warnings be printed?
+#' @param local should the local shiny app be started instead of the website? `FALSE` by default. The shiny app will be removed in a future version.
+#' @param browse should the website be opened in the browser? By default `TRUE` in interactive sessions. The link is returned invisibly.
 #' @import colorspace abind
 #' @importFrom grDevices hcl dev.size contourLines
 #' @importFrom stats lm predict dbeta
@@ -681,7 +687,7 @@ plot_table = function(p, text.format, text.col, include.na, cvd.sim, coltemp, ve
 #' @example ./examples/c4a_table.R
 #' @seealso References of the palettes: \code{\link{cols4all-package}}.
 #' @export
-#' @return An HMTL table (`kableExtra` object)
+#' @return `c4a_table`: an HTML table (`kableExtra` object). `c4a_gui`: the link to the website (invisibly).
 #' @rdname c4a_gui
 #' @name c4a_table
 c4a_table = function(type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd", "bivg"), n = NULL, m = NULL, continuous = FALSE, filters = character(0), cvd.sim = c("none", "bw", "deutan", "protan", "tritan"), col.temp = 6500, sort = "name", text.format = "hex", text.col = "same", series = "all", range = NA, colorsort = "orig", include.na = FALSE, include_tritan = FALSE, show.scores = FALSE, columns = NA, verbose = TRUE) {

@@ -5,7 +5,13 @@
 \alias{c4a_table}
 \title{Graphical user interface to analyse palettes}
 \usage{
-c4a_gui(type = "cat", n = NA, series = "all")
+c4a_gui(
+  type = "cat",
+  n = NA,
+  series = "all",
+  local = FALSE,
+  browse = interactive()
+)
 
 c4a_table(
   type = c("cat", "seq", "div", "cyc", "bivs", "bivc", "bivd", "bivg"),
@@ -34,6 +40,10 @@ c4a_table(
 \item{n, m}{\code{n} is the number of displayed colors. For bivariate palettes \code{"biv"}, \code{n} and \code{m} are the number of columns and rows respectively. If omitted: for \code{"cat"} the full palette is displayed, for \code{"seq"}, \code{"div"} and \code{"cyc"}, 7, 9, and 9 colors respectively, and for \code{"bivs"}/\code{"bivc"}/\code{"bivd"}/\code{"bivg"} 4 columns and rows. For \code{c4a_gui} it only determines which number of colors initially.}
 
 \item{series}{Series of palettes to show. See \code{\link{c4a_series}} for options. By default, \code{"all"}, which means all series. For \code{c4a_gui} it only determines which series are shown initially.}
+
+\item{local}{should the local shiny app be started instead of the website? \code{FALSE} by default. The shiny app will be removed in a future version.}
+
+\item{browse}{should the website be opened in the browser? By default \code{TRUE} in interactive sessions. The link is returned invisibly.}
 
 \item{continuous}{should the palettes as continuous instead of discrete. Only applicable for \code{"seq"}, \code{"div"}, and \code{"cyc"}.}
 
@@ -64,23 +74,36 @@ c4a_table(
 \item{verbose}{should messages and warnings be printed?}
 }
 \value{
-An HMTL table (\code{kableExtra} object)
+\code{c4a_table}: an HTML table (\code{kableExtra} object). \code{c4a_gui}: the link to the website (invisibly).
 }
 \description{
-Graphical user interface to analyse palettes. \code{c4a_table} shows a table that can be opened in the browser. \code{c4a_gui} is a graphical user interface (shiny app) around this table.
+Graphical user interface to analyse palettes. \code{c4a_table} shows a table that can be opened in the browser. \code{c4a_gui} opens the cols4all website (\url{https://cols4all.org}), a graphical user interface around this table with tabs to analyse a palette in depth.
 }
 \details{
+Own palettes that are loaded with \code{\link{c4a_load}} are added to the website (as series \code{"custom"}) and are scored there in the same way as in cols4all. They are not uploaded: they are only stored in the link that is opened. The website applies the default range of sequential and diverging palettes, interpolates in RGB space, and determines the color for missing values itself, so palettes that deviate from these defaults may look slightly different. The website shows at most 20 own palettes with at most 36 colors each.
+
+With \code{local = TRUE}, the previous version of the graphical user interface is started: a shiny app that runs locally, for instance for offline use. It requires the packages shiny, shinyjs, kableExtra, colorblindcheck and plotly. It will be removed in a future version of cols4all.
+
 See vignette how the properties are calculated. Parameters, such as threshold values which determined when palettes are classified as "colorblind-friendly", can be specified via \code{\link{c4a_options}}. Also the nameability score function (which is in development) can be specified there. See the examples of \code{\link{c4a_options}} for both use cases.
 }
 \examples{
-if (requireNamespace("shiny") &&
-  requireNamespace("shinyjs") &&
-  requireNamespace("kableExtra") &&
-  requireNamespace("colorblindcheck") &&
-  interactive()) {
-
+if (interactive()) {
+# open the cols4all website
 c4a_gui()
 
+# sequential palettes with 5 colors of two series
+c4a_gui(type = "seq", n = 5, series = c("brewer", "scico"))
+}
+
+if (requireNamespace("colorblindcheck") && interactive()) {
+# test an own palette: it is added to the website
+x = c4a_data(list(my_pal = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2")),
+	types = "cat", series = "mine")
+c4a_load(x)
+c4a_gui()
+}
+
+if (requireNamespace("kableExtra") && interactive()) {
 # categorical palettes with maximum number of colors
 c4a_table(type = "cat")
 
